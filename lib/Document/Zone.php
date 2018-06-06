@@ -1,44 +1,86 @@
 <?php
+
+namespace Verifai\Document;
+
 /**
- * Created by PhpStorm.
- * User: joshua
- * Date: 31/05/2018
- * Time: 14:21
+ * Document objects contain zones, and the zones are represented
+ * by this class.
+ *
+ * Every zone has a position in the form of coordinates, a title, and
+ * some operations.
+ * @package Verifai
  */
-
-namespace Verifai;
-
-
-class DocumentZone
+class Zone
 {
+    /**
+     * @var Document|null
+     */
     public $document = null;
+    /**
+     * @var string|null
+     */
     public $title = null;
+    /**
+     * @var string|null
+     */
     public $side = null;
+    /**
+     * @var array|null
+     */
     public $coordinates = null;
 
-    public function __construct($document, $zoneData) {
+    /**
+     * Zone constructor.
+     * @param $document
+     * @param $zoneData
+     */
+    public function __construct(Document $document, array $zoneData) {
         $this->document = $document;
         $this->title = $zoneData['title'];
         $this->setSide($zoneData['side']);
         $this->setCoordinates($zoneData['x'], $zoneData['y'], $zoneData['width'], $zoneData['height']);
     }
 
+    /**
+     * Return if this zone is the Machine Readable Zone
+     * @return bool
+     */
     public function isMrz() {
         return strtoupper($this->getTitle()) == 'MRZ';
     }
 
+    /**
+     * Title of the zone
+     * @return string
+     */
     public function getTitle() {
         return $this->title;
     }
 
+    /**
+     * F for front, and B for back
+     * @return string
+     */
     public function getSide() {
         return $this->side;
     }
 
-    public function setSide($side) {
+    /**
+     * Change and set the side of the zone
+     * @param $side
+     */
+    public function setSide(string $side) {
         $this->side = $side[0];
     }
 
+    /**
+     * Since the coordinate system of the zones is different this
+     * method converts it to the xmin, ymin, xmax, ymax system.
+     * @param $xmin
+     * @param $ymin
+     * @param $width
+     * @param $height
+     */
     public function setCoordinates($xmin, $ymin, $width, $height) {
         $mm_size = $this->document->getActualSizeMm();
         $width_mm = $mm_size[0];
@@ -61,6 +103,10 @@ class DocumentZone
         );
     }
 
+    /**
+     * Returns: xmin, ymin, xmax, ymax coordinates
+     * @return array
+     */
     public function getPositionInImage() {
         return $this->coordinates;
     }

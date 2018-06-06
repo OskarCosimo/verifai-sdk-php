@@ -1,30 +1,51 @@
 <?php
+
+namespace Verifai\Document;
+
+
 /**
- * Created by PhpStorm.
- * User: joshua
- * Date: 31/05/2018
- * Time: 14:21
+ * Modern document have a Machine Readable Zone. This class is the
+ * proxy between your code and the Verifai OCR service. You can get
+ * an instance of this class from the Document object.
+ *
+ * You can create one by initializing it with a Zone
+ * that contains a MRZ.
+ * @package Verifai
  */
-
-namespace Verifai;
-
-
-class DocumentMrz
+class Mrz
 {
+    /**
+     * @var Zone|null
+     */
     public $zone = null;
 
-    protected $mrzResponse;
+    /**
+     * @var array|null
+     */
+    protected $mrzResponse = null;
 
-    public function __construct($zone)
+    /**
+     * Mrz constructor.
+     * @param $zone
+     */
+    public function __construct(Zone $zone)
     {
         $this->zone = $zone;
     }
 
+    /**
+     * Returns weather the OCR has been successful
+     * @return bool
+     */
     public function isSuccessful()
     {
         return $this->readMrz()['status'] == 'SUCCESS';
     }
 
+    /**
+     * Returns the raw OCR response form the OCR service
+     * @return array|null
+     */
     public function readMrz()
     {
         if ($this->mrzResponse !== null) {
@@ -42,6 +63,10 @@ class DocumentMrz
 
     }
 
+    /**
+     * Returns the fields form the MRZ
+     * @return array|null
+     */
     public function getFields()
     {
         if ($this->isSuccessful()) {
@@ -50,6 +75,10 @@ class DocumentMrz
         return null;
     }
 
+    /**
+     * Returns the raw fields form the MRZ
+     * @return array|null
+     */
     public function getFieldsRaw()
     {
         if ($this->isSuccessful()) {
@@ -58,6 +87,10 @@ class DocumentMrz
         return null;
     }
 
+    /**
+     * Returns the checksum results for the MRZ
+     * @return array|null
+     */
     public function getChecksums()
     {
         if ($this->isSuccessful()) {
@@ -66,6 +99,10 @@ class DocumentMrz
         return null;
     }
 
+    /**
+     * Returns the rotation that was required to read the MRZ
+     * @return integer|null
+     */
     public function getRotation()
     {
         if ($this->isSuccessful()) {
@@ -74,11 +111,17 @@ class DocumentMrz
         return null;
     }
 
+    /**
+     * @return Document
+     */
     protected function getDocument()
     {
         return $this->zone->document;
     }
 
+    /**
+     * @return Service
+     */
     protected function getService()
     {
         return $this->zone->document->service;

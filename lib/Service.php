@@ -1,48 +1,112 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: joshua
- * Date: 31/05/2018
- * Time: 14:19
- */
 
 namespace Verifai;
 
 require_once 'Document.php';
 
 
+/**
+ * The VerifaiService is your main component to use. It communicates
+ * with various backend systems and handles all the privacy sensitive
+ * data internally.
+ *
+ * To use the service you need to initialize it first with a API token
+ * and the URL to the classifier service, and optional to the OCR
+ * service.
+ *
+ * See https://docs.verifai.com/server_docs/php-sdk-latest.html
+ * @package Verifai
+ */
 class Service
 {
-    public $apiToken;
-    public $serverUrls = array('cassifier' => array(), 'ocr' => array());
-    public $baseApiUrl = 'https://dashboard.verifai.com/api/';
-    public $sslVerify = true;
-
-    protected $urlRoundRobbin = array('ckassifier' => 0, 'ocr' => 0);
-
+    /**
+     * Registers the version
+     */
     const VERSION = '0.1.0';
 
+    /**
+     * API Token to communicate with Verifai Backend
+     * @var string
+     */
+    public $apiToken;
+    /**
+     * Endpoint where the Verifai Backend is located
+     * @var string
+     */
+    public $baseApiUrl = 'https://dashboard.verifai.com/api/';
+    /**
+     * Weather or not to check the SSL certificates while communicating
+     * @var bool
+     */
+    public $sslVerify = true;
+
+    /**
+     * @var array
+     */
+    protected $serverUrls = array('classifier' => array(), 'ocr' => array());
+    /**
+     * @var array
+     */
+    protected $urlRoundRobbin = array('classifier' => 0, 'ocr' => 0);
+
+    /**
+     * @return string|null
+     */
     protected function getApiToken()
     {
         return $this->apiToken;
     }
 
+    /**
+     * @return string
+     */
     protected function getBaseApiUrl()
     {
         return $this->baseApiUrl;
     }
 
-    public function addClassifierUrl($url, $skipUnreachable = false)
+    /**
+     * To add the URL to your local running Verifai Classifier service.
+     * Please not that you need to provide the full path to the api
+     * endpoint.
+     *
+     * For example: http://localhost:5000/api/classify/
+     *
+     * You can add multiple servers to scale up operations.
+     * @param $url
+     * @param bool $skipUnreachable
+     * @return bool
+     */
+    public function addClassifierUrl(string $url, $skipUnreachable = false)
     {
         return $this->addServerUrl($url, $skipUnreachable, 'classifier');
     }
 
-    public function addOcrUrl($url, $skipUnreachable = false)
+    /**
+     * To add the URL to your local running Verifai OCR service.
+     * Please not that you need to provide the full path to the api
+     * endpoint.
+     *
+     * For example: http://localhost:5001/api/ocr/
+     *
+     * You can add multiple servers to scale up operations.
+     * @param $url
+     * @param bool $skipUnreachable
+     * @return bool
+     */
+    public function addOcrUrl(string $url, $skipUnreachable = false)
     {
         return $this->addServerUrl($url, $skipUnreachable, 'ocr');
     }
 
-    public function getModelData($id_uuid)
+    /**
+     * Fetch the raw data from the API for further processing.
+     *
+     * Note: Since it is not a public API it is subject to changes.
+     * @param $id_uuid
+     * @return array|null
+     */
+    public function getModelData(string $id_uuid)
     {
         $data = $this->getFromApi('id-models', array(
             'uuid' => $id_uuid
@@ -53,13 +117,25 @@ class Service
         return null;
     }
 
-    public function getOcrData($mrzImage)
+    /**
+     * Sends the mrz_image (Image) to the Verifai OCR service, and
+     * returns the raw response.
+     * @param $mrzImage
+     * @return array
+     */
+    public function getOcrData(resource $mrzImage)
     {
         $response = $this->sendImage($this->getUrl('ocr'), $mrzImage);
         return $response;
     }
 
-    public function classifyImage($image)
+    /**
+     * Send a image to the Verifai Classifier and get a VerifaiDocument
+     * in return. If it fails to classify it will return null.
+     * @param $image
+     * @return null|Document
+     */
+    public function classifyImage(resource $image)
     {
         $response = $this->sendImage($this->getUrl('classifier'), $image);
 
@@ -74,25 +150,47 @@ class Service
         return null;
     }
 
-    public function classifyImagePath($imagePath)
+    /**
+     * Send a image to the Verifai Classifier and get a VerifaiDocument
+     * in return. If it fails to classify it will return None.
+     * @param $imagePath
+     * @return null|Document
+     */
+    public function classifyImagePath(string $imagePath)
     {
         $gdImage = imagecreatefromjpeg($imagePath);
         return $this->classifyImage($gdImage);
     }
 
-    protected function addServerUrl($url, $skipUnreachable = false, $type)
+    /**
+     * @param $url
+     * @param bool $skipUnreachable
+     * @param $type
+     * @return bool
+     */
+    protected function addServerUrl(string $url, $skipUnreachable = false, string $type)
     {
         if ($skipUnreachable or $this->checkServerUrl($url)) {
             $this->serverUrls[$type][] = $url;
         }
+        return true;
     }
 
-    protected function getUrl($type)
+    /**
+     * @param $type
+     * @return string|null
+     */
+    protected function getUrl(string $type)
     {
         return $this->serverUrls[$type][0];
     }
 
-    protected function getFromApi($path, $params)
+    /**
+     * @param $path
+     * @param $params
+     * @return mixed
+     */
+    protected function getFromApi(string $path, array $params)
     {
         $GET = http_build_query($params);
 
@@ -109,7 +207,11 @@ class Service
         return json_decode($response, true);
     }
 
-    protected function checkServerUrl($url)
+    /**
+     * @param $url
+     * @return bool
+     */
+    protected function checkServerUrl(string $url)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -132,7 +234,12 @@ class Service
         return $options == array('OPTIONS', 'POST');
     }
 
-    protected function sendImage($url, $image)
+    /**
+     * @param $url
+     * @param $image
+     * @return mixed
+     */
+    protected function sendImage(string $url, resource $image)
     {
         $tmp = tempnam('', 'verifai_image');
         imagejpeg($image, $tmp);
