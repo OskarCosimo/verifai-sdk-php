@@ -2,6 +2,8 @@
 
 namespace Verifai\Document;
 
+use Verifai\Document;
+
 /**
  * Document objects contain zones, and the zones are represented
  * by this class.
@@ -15,26 +17,27 @@ class Zone
     /**
      * @var Document|null
      */
-    public $document = null;
+    private $document;
     /**
      * @var string|null
      */
-    public $title = null;
+    private $title;
     /**
      * @var string|null
      */
-    public $side = null;
+    private $side;
     /**
      * @var array|null
      */
-    public $coordinates = null;
+    private $coordinates;
 
     /**
      * Zone constructor.
      * @param $document
      * @param $zoneData
      */
-    public function __construct(Document $document, array $zoneData) {
+    public function __construct(Document $document, array $zoneData)
+    {
         $this->document = $document;
         $this->title = $zoneData['title'];
         $this->setSide($zoneData['side']);
@@ -45,7 +48,8 @@ class Zone
      * Return if this zone is the Machine Readable Zone
      * @return bool
      */
-    public function isMrz() {
+    public function isMrz()
+    {
         return strtoupper($this->getTitle()) == 'MRZ';
     }
 
@@ -53,7 +57,8 @@ class Zone
      * Title of the zone
      * @return string
      */
-    public function getTitle() {
+    public function getTitle()
+    {
         return $this->title;
     }
 
@@ -61,7 +66,8 @@ class Zone
      * F for front, and B for back
      * @return string
      */
-    public function getSide() {
+    public function getSide()
+    {
         return $this->side;
     }
 
@@ -69,7 +75,8 @@ class Zone
      * Change and set the side of the zone
      * @param $side
      */
-    public function setSide(string $side) {
+    public function setSide(string $side)
+    {
         $this->side = $side[0];
     }
 
@@ -81,7 +88,8 @@ class Zone
      * @param $width
      * @param $height
      */
-    public function setCoordinates($xmin, $ymin, $width, $height) {
+    public function setCoordinates($xmin, $ymin, $width, $height)
+    {
         $mm_size = $this->document->getActualSizeMm();
         $width_mm = $mm_size[0];
         $height_mm = $mm_size[1];
@@ -107,7 +115,16 @@ class Zone
      * Returns: xmin, ymin, xmax, ymax coordinates
      * @return array
      */
-    public function getPositionInImage() {
+    public function getPositionInImage()
+    {
         return $this->coordinates;
+    }
+
+    /**
+     * Returns the document
+     * @return null|Document
+     */
+    public function getDocument() {
+        return $this->document;
     }
 }

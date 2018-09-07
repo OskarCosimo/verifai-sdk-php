@@ -4,7 +4,7 @@ namespace Verifai\Document;
 
 
 /**
- * Modern document have a Machine Readable Zone. This class is the
+ * Modern documents have a Machine Readable Zone. This class is the
  * proxy between your code and the Verifai OCR service. You can get
  * an instance of this class from the Document object.
  *
@@ -17,12 +17,12 @@ class Mrz
     /**
      * @var Zone|null
      */
-    public $zone = null;
+    public $zone;
 
     /**
      * @var array|null
      */
-    protected $mrzResponse = null;
+    protected $mrzResponse;
 
     /**
      * Mrz constructor.
@@ -112,19 +112,19 @@ class Mrz
     }
 
     /**
-     * @return Document
+     * @return \Verifai\Document
      */
     protected function getDocument()
     {
-        return $this->zone->document;
+        return $this->zone->getDocument();
     }
 
     /**
-     * @return Service
+     * @return \Verifai\Service
      */
     protected function getService()
     {
-        return $this->zone->document->service;
+        return $this->getDocument()->getService();
     }
 
 

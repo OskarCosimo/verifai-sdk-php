@@ -2,8 +2,13 @@
 
 namespace Verifai;
 
-require_once 'Document/Mrz.php';
 require_once 'Document/Zone.php';
+require_once 'Document/Mrz.php';
+require_once 'Utils.php';
+
+use Verifai\Document\Mrz;
+use Verifai\Document\Zone;
+
 
 /*
  * Once a classification has taken place the Verifai\Service will
@@ -23,48 +28,48 @@ class Document
 {
     /**
      * Verifai Service to use to communicate
-     * @var Service|null
+     * @var Service
      */
-    public $service = null;
+    private $service;
     /**
      * The document internal Verifai ID
      * @var string|null
      */
-    public $idUuid = null;
+    private $idUuid;
     /**
      * The side of the ID, "F"ront or "B"ack
      * @var string|null
      */
-    public $idSide = null;
+    private $idSide;
     /**
      * Array of xmin,ymin,xmax,ymax coordinates
      * @var array|null
      */
-    public $coordinates = null;
+    private $coordinates;
 
     /**
      * Full original image
      * @var resource|null
      */
-    public $image = null;
+    private $image;
     /**
      * Cropped image when a crop has been triggered it will be set
      * @var resource|null
      */
-    public $croppedImage = null;
+    private $croppedImage;
 
     /**
      * @var array|null
      */
-    protected $modelData = null;
+    protected $modelData;
     /**
      * @var array|null
      */
-    protected $zones = null;
+    protected $zones;
     /**
      * @var Mrz|null
      */
-    protected $mrz = null;
+    protected $mrz;
 
     /**
 
@@ -72,13 +77,12 @@ class Document
      * @param $binaryJpegImage
      * @param $service
      */
-    public function __construct(array $response, string $binaryJpegImage, Service $service)
+    public function __construct(Response $response, Service $service)
     {
         $this->service = $service;
-        $this->idUuid = $response['uuid'];
-        $this->idSide = $response['side'];
-        $this->coordinates = $response['coords'];
-        $this->loadImage($binaryJpegImage);
+        $this->idUuid = $response->getUuid();
+        $this->idSide = $response->getSide();
+        $this->coordinates = $response->getCords();
     }
 
     /**
@@ -151,7 +155,7 @@ class Document
 
     /**
      * Return the coordinates where te document is located
-     * @return array
+     * @return Coordinates
      */
     public function getPositionInImage()
     {
@@ -164,10 +168,9 @@ class Document
      */
     public function loadImage(string $binaryJpeg)
     {
-        $tmp = tempnam('', 'verifai_image');
-        file_put_contents($tmp, $binaryJpeg);
-        $this->image = imagecreatefromjpeg($tmp);
-        unlink($tmp);
+        $this->image = imagecreatefromstring($binaryJpeg);
+        # cashed image is no longer valid
+        $this->croppedImage = null;
     }
 
     /**
@@ -178,10 +181,10 @@ class Document
      * @param float $tolerance
      * @return resource
      */
-    public function getPartOfCardImage(array $coordinates, $tolerance = .0)
+    public function getPartOfCardImage(array $coordinates, $tolerance = 0.0)
     {
         $image = $this->getCroppedImage();
-        if ($tolerance > .0) {
+        if ($tolerance > 0.0) {
             $coordinates = $this->inflateCoordinates($coordinates, $tolerance);
         }
         $pxCoords = $this->getBoundingBoxPixelCoordinates($coordinates, imagesx($image), imagesy($image));
@@ -273,7 +276,7 @@ class Document
     public function getModelData()
     {
         if (!$this->modelData) {
-            $this->modelData = $this->getService()->getModelData($this->getIdUuid());
+            $this->modelData = $this->service->getModelData($this->getIdUuid());
         }
         return $this->modelData;
     }
@@ -285,7 +288,7 @@ class Document
      * squares on the coordinates of the zone.
      *
      * By default it filters out the zones that are for the other side.
-     * @param $zones
+     * @param Zone[] $zones
      * @param null|resource $image
      * @param bool $filterSides
      * @return resource
@@ -352,5 +355,28 @@ class Document
             'height' => $pixelCoordinates['ymax'] - $pixelCoordinates['ymin'],
         );
         return $response;
+    }
+}
+
+
+class DocumentFactory
+{
+    /**
+     * Factory class for Document,
+     * the idea is to move loading of the image out of the Document's constructor
+     */
+
+    /**
+     * Creates document
+     * @param Response $response
+     * @param Service $service
+     * @param string $binaryJpegImage
+     * @return Document
+     */
+    public static function create(Response $response, Service $service, string $binaryJpegImage)
+    {
+        $document = new Document($response, $service);
+        $document->loadImage($binaryJpegImage);
+        return $document;
     }
 }

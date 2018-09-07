@@ -38,7 +38,7 @@ class Service
      * Weather or not to check the SSL certificates while communicating
      * @var bool
      */
-    public $sslVerify = true;
+    public $sslVerify = 2;
 
     /**
      * @var array
@@ -123,7 +123,7 @@ class Service
      * @param $mrzImage
      * @return array
      */
-    public function getOcrData(resource $mrzImage)
+    public function getOcrData($mrzImage)
     {
         $response = $this->sendImage($this->getUrl('ocr'), $mrzImage);
         return $response;
@@ -135,15 +135,19 @@ class Service
      * @param $image
      * @return null|Document
      */
-    public function classifyImage(resource $image)
+    public function classifyImage($image)
     {
-        $response = $this->sendImage($this->getUrl('classifier'), $image);
+        $json_response = $this->sendImage($this->getUrl('classifier'), $image);
 
-        if ($response['status'] == 'SUCCESS') {
+        if ($json_response['status'] == 'SUCCESS') {
             $handle = fopen('php://memory', 'w+');
             imagejpeg($image, $handle);
             fseek($handle, 0);
-            $document = new Document($response, stream_get_contents($handle), $this);
+            $uuid = $json_response['uuid'];
+            $side = $json_response['side'];
+            $coords = $json_response['coords'];
+            $response = new Response($uuid, $side, $coords);
+            $document = DocumentFactory::create($response, $this, stream_get_contents($handle));
             fclose($handle);
             return $document;
         }
@@ -239,7 +243,7 @@ class Service
      * @param $image
      * @return mixed
      */
-    protected function sendImage(string $url, resource $image)
+    protected function sendImage(string $url, $image)
     {
         $tmp = tempnam('', 'verifai_image');
         imagejpeg($image, $tmp);
