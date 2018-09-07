@@ -38,7 +38,7 @@ class Service
      * Weather or not to check the SSL certificates while communicating
      * @var bool
      */
-    public $sslVerify = True;
+    public $sslVerify = true;
 
     /**
      * @var array
