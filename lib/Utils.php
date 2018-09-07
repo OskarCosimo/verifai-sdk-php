@@ -17,13 +17,13 @@ final class Response
     /**
      * @var array
      */
-    private $cords;
+    private $coords;
 
-    public function __construct($uuid, $side, array $cords)
+    public function __construct($uuid, $side, array $coords)
     {
         $this->uuid = $uuid;
         $this->side = $side;
-        $this->cords = $cords;
+        $this->coords = $coords;
     }
 
     /**
@@ -45,9 +45,9 @@ final class Response
     /**
      * @return array
      */
-    public function getCords()
+    public function getCoords()
     {
-        return $this->cords;
+        return $this->coords;
     }
 
 }

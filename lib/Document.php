@@ -82,7 +82,7 @@ class Document
         $this->service = $service;
         $this->idUuid = $response->getUuid();
         $this->idSide = $response->getSide();
-        $this->coordinates = $response->getCords();
+        $this->coordinates = $response->getCoords();
     }
 
     /**
