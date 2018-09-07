@@ -123,7 +123,7 @@ class Service
      * @param $mrzImage
      * @return array
      */
-    public function getOcrData(resource $mrzImage)
+    public function getOcrData($mrzImage)
     {
         $response = $this->sendImage($this->getUrl('ocr'), $mrzImage);
         return $response;
@@ -135,15 +135,19 @@ class Service
      * @param $image
      * @return null|Document
      */
-    public function classifyImage(resource $image)
+    public function classifyImage($image)
     {
-        $response = $this->sendImage($this->getUrl('classifier'), $image);
+        $json_response = $this->sendImage($this->getUrl('classifier'), $image);
 
-        if ($response['status'] == 'SUCCESS') {
+        if ($json_response['status'] == 'SUCCESS') {
             $handle = fopen('php://memory', 'w+');
             imagejpeg($image, $handle);
             fseek($handle, 0);
-            $document = new Document($response, stream_get_contents($handle), $this);
+            $uuid = $json_response['uuid'];
+            $side = $json_response['side'];
+            $coords = $json_response['coords'];
+            $response = new Response($uuid, $side, $coords);
+            $document = DocumentFactory::create($response, $this, stream_get_contents($handle));
             fclose($handle);
             return $document;
         }
@@ -198,10 +202,13 @@ class Service
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Authorization: Token ' . $this->getApiToken()
         ));
+
+        $sslVerify = $this->curlSslVerify();
+
         curl_setopt($ch, CURLOPT_URL, $this->getBaseApiUrl() . $path . '?' . $GET);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
         return json_decode($response, true);
@@ -214,10 +221,13 @@ class Service
     protected function checkServerUrl(string $url)
     {
         $ch = curl_init();
+
+        $sslVerify = $this->curlSslVerify();
+
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'OPTIONS');
         curl_setopt($ch, CURLOPT_HEADER, true);
@@ -239,7 +249,7 @@ class Service
      * @param $image
      * @return mixed
      */
-    protected function sendImage(string $url, resource $image)
+    protected function sendImage(string $url, $image)
     {
         $tmp = tempnam('', 'verifai_image');
         imagejpeg($image, $tmp);
@@ -250,13 +260,23 @@ class Service
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->sslVerify);
+        $sslVerify = $this->curlSslVerify();
+
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify);
 
         $response = curl_exec($ch);
         curl_close($ch);
         unlink($tmp);
         return json_decode($response, true);
+    }
+
+    private function curlSslVerify()
+    {
+        if ($this->sslVerify) {
+            return 2;
+        }
+        return 0;
     }
 }
