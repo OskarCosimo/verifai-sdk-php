@@ -24,6 +24,7 @@ use Verifai\Document\Zone;
  * lives.
  * @package Verifai
  */
+
 class Document
 {
     /**
@@ -72,7 +73,6 @@ class Document
     protected $mrz;
 
     /**
-
      * @param $response
      * @param $binaryJpegImage
      * @param $service
@@ -302,8 +302,10 @@ class Document
             if ($filterSides && $zone->getSide() != $this->getIdSide()) {
                 continue;
             }
-            $pxCoords = $this->getBoundingBoxPixelCoordinates($zone->getPositionInImage(), imagesx($image), imagesy($image));
-            imagefilledrectangle($image, $pxCoords['xmin'], $pxCoords['ymin'], $pxCoords['xmax'], $pxCoords['ymax'], $color);
+            $pxCoords = $this->getBoundingBoxPixelCoordinates($zone->getPositionInImage(), imagesx($image),
+                imagesy($image));
+            imagefilledrectangle($image, $pxCoords['xmin'], $pxCoords['ymin'], $pxCoords['xmax'], $pxCoords['ymax'],
+                $color);
         }
         return $image;
     }

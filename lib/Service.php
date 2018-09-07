@@ -274,8 +274,9 @@ class Service
 
     private function curlSslVerify()
     {
-        if($this->sslVerify)
+        if ($this->sslVerify) {
             return 2;
+        }
         return 0;
     }
 }
