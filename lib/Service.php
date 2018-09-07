@@ -38,7 +38,7 @@ class Service
      * Weather or not to check the SSL certificates while communicating
      * @var bool
      */
-    public $sslVerify = 2;
+    public $sslVerify = True;
 
     /**
      * @var array
@@ -202,10 +202,13 @@ class Service
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Authorization: Token ' . $this->getApiToken()
         ));
+
+        $sslVerify = $this->curlSslVerify();
+
         curl_setopt($ch, CURLOPT_URL, $this->getBaseApiUrl() . $path . '?' . $GET);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response = curl_exec($ch);
         return json_decode($response, true);
@@ -218,10 +221,13 @@ class Service
     protected function checkServerUrl(string $url)
     {
         $ch = curl_init();
+
+        $sslVerify = $this->curlSslVerify();
+
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'OPTIONS');
         curl_setopt($ch, CURLOPT_HEADER, true);
@@ -254,13 +260,22 @@ class Service
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $this->sslVerify);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->sslVerify);
+        $sslVerify = $this->curlSslVerify();
+
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, $sslVerify);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $sslVerify);
 
         $response = curl_exec($ch);
         curl_close($ch);
         unlink($tmp);
         return json_decode($response, true);
+    }
+
+    private function curlSslVerify()
+    {
+        if($this->sslVerify)
+            return 2;
+        return 0;
     }
 }
