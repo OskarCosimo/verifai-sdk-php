@@ -169,7 +169,6 @@ class Document
     public function loadImage(string $binaryJpeg)
     {
         $this->image = imagecreatefromstring($binaryJpeg);
-        # cashed image is no longer valid
         $this->croppedImage = null;
     }
 
