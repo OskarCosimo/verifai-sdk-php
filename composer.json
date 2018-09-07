@@ -12,5 +12,10 @@
         "psr-4": {
             "Verifai\\": "lib/"
         }
+    },
+    "readme": "https://github.com/verifai-id-verification/verifai-sdk-php/blob/master/README.md",
+    "support": {
+	    "email": "support@verifai.com",
+	    "docs": "https://docs.verifai.com/server_docs/php-sdk-latest.html"
     }
 }
