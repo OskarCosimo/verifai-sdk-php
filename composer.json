@@ -1,0 +1,23 @@
+{
+    "name": "verifai/verifai-sdk-php",
+    "homepage": "https://www.verifai.com/",
+    "description": "The PHP SDK for Verifai",
+    "keywords": ["ocr", "sdk", "php-sdk", "artificial-intelligence", "identification", "gdpr"],
+    "type": "library",
+    "license": "Apache-2.0",
+    "minimum-stability": "dev",
+    "require": {
+    	"php": ">=7.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Verifai\\": "lib/"
+        }
+    },
+    "readme": "README.md",
+    "support": {
+	    "email": "support@verifai.com",
+	    "source": "https://github.com/verifai-id-verification/verifai-sdk-php",
+	    "docs": "https://docs.verifai.com/server_docs/php-sdk-latest.html"
+    }
+}

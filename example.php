@@ -1,8 +1,10 @@
 <?php
 
-require_once 'lib/Service.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-$service = new \Verifai\Service();
+use Verifai\Service;
+
+$service = new Service();
 $service->apiToken = 'API_TOKEN_IN_HERE';
 $service->addClassifierUrl('http://localhost:5000/api/classify/');
 $service->addOcrUrl('http://localhost:5001/api/ocr/');
