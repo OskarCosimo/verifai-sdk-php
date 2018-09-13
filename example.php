@@ -1,11 +1,17 @@
 <?php
 
+require_once 'lib/DocumentFactory.php';
 require_once 'lib/Service.php';
 
-$service = new \Verifai\Service();
+use Verifai\Service;
+use Verifai\DocumentFactory;
+
+$documentFactory = new DocumentFactory();
+$service = new Service($documentFactory);
 $service->apiToken = 'API_TOKEN_IN_HERE';
 $service->addClassifierUrl('http://localhost:5000/api/classify/');
 $service->addOcrUrl('http://localhost:5001/api/ocr/');
+
 
 # Classify gd image
 #$id = imagecreatefromjpeg('docs/sample_images/dutch-id-front-sample.jpg');

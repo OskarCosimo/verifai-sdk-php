@@ -11,7 +11,7 @@ use Verifai\Document\Zone;
 
 
 /*
- * Once a classification has taken place the Verifai\Service will
+ * Once a classification has taken place the {@see Verifai\Service} will
  * return a instance of this class.
  *
  * It represents the data we collected for you, and provides several
@@ -356,28 +356,5 @@ class Document
             'height' => $pixelCoordinates['ymax'] - $pixelCoordinates['ymin'],
         );
         return $response;
-    }
-}
-
-
-class DocumentFactory
-{
-    /**
-     * Factory class for Document,
-     * the idea is to move loading of the image out of the Document's constructor
-     */
-
-    /**
-     * Creates document
-     * @param Response $response
-     * @param Service $service
-     * @param string $binaryJpegImage
-     * @return Document
-     */
-    public static function create(Response $response, Service $service, string $binaryJpegImage)
-    {
-        $document = new Document($response, $service);
-        $document->loadImage($binaryJpegImage);
-        return $document;
     }
 }

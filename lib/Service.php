@@ -3,6 +3,7 @@
 namespace Verifai;
 
 require_once 'Document.php';
+require_once 'DocumentFactory.php';
 
 
 /**
@@ -48,6 +49,16 @@ class Service
      * @var array
      */
     protected $urlRoundRobbin = array('classifier' => 0, 'ocr' => 0);
+
+    /**
+     * @var DocumentFactory
+     */
+    private $documentFactory;
+
+    public function __construct(DocumentFactory $documentFactory)
+    {
+        $this->documentFactory = $documentFactory;
+    }
 
     /**
      * @return string|null
@@ -147,7 +158,7 @@ class Service
             $side = $json_response['side'];
             $coords = $json_response['coords'];
             $response = new Response($uuid, $side, $coords);
-            $document = DocumentFactory::create($response, $this, stream_get_contents($handle));
+            $document = $this->documentFactory->create($response, $this, stream_get_contents($handle));
             fclose($handle);
             return $document;
         }
