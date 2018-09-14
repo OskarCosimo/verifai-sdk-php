@@ -22,7 +22,6 @@ use Verifai\Document\Zone;
  * Everything is lazy, and will be collected upon request. When that
  * has happened it will be cached in memory as long as the object
  * lives.
- * @package Verifai
  */
 
 class Document
@@ -49,10 +48,10 @@ class Document
     private $coordinates;
 
     /**
-     * Full original image
+     * Original Image
      * @var resource|null
      */
-    private $image;
+    private $originalImage;
     /**
      * Cropped image when a crop has been triggered it will be set
      * @var resource|null
@@ -74,7 +73,6 @@ class Document
 
     /**
      * @param $response
-     * @param $binaryJpegImage
      * @param $service
      */
     public function __construct(Response $response, Service $service)
@@ -115,13 +113,13 @@ class Document
      * Get the gd image
      * @return resource
      */
-    public function getImage()
+    public function getOriginalImage()
     {
-        return $this->image;
+        return $this->originalImage;
     }
 
     /**
-     * Cuts out the document form the entire image and returns the
+     * Cuts out the document from the entire image and returns the
      * cropped image
      * @return resource
      */
@@ -130,8 +128,8 @@ class Document
         if ($this->croppedImage != null) {
             return $this->croppedImage;
         }
-        $pxCoords = $this->getBoundingBoxPixelCoordinates($this->getPositionInImage());
-        $this->croppedImage = imagecrop($this->image, $this->coordinatesArray($pxCoords));
+        $pxCoordinates = $this->getBoundingBoxPixelCoordinates($this->getPositionInImage());
+        $this->croppedImage = imagecrop($this->originalImage, $this->coordinatesArray($pxCoordinates));
         return $this->croppedImage;
     }
 
@@ -155,7 +153,7 @@ class Document
 
     /**
      * Return the coordinates where te document is located
-     * @return Coordinates
+     * @return array|null
      */
     public function getPositionInImage()
     {
@@ -164,11 +162,11 @@ class Document
 
     /**
      * Load filecontents into the object, and use that as image
-     * @param $binaryJpeg
+     * @param string $binaryJpeg
      */
     public function loadImage(string $binaryJpeg)
     {
-        $this->image = imagecreatefromstring($binaryJpeg);
+        $this->originalImage = imagecreatefromstring($binaryJpeg);
         $this->croppedImage = null;
     }
 
@@ -186,38 +184,38 @@ class Document
         if ($tolerance > 0.0) {
             $coordinates = $this->inflateCoordinates($coordinates, $tolerance);
         }
-        $pxCoords = $this->getBoundingBoxPixelCoordinates($coordinates, imagesx($image), imagesy($image));
-        return imagecrop($image, $this->coordinatesArray($pxCoords));
+        $pxCoordinates = $this->getBoundingBoxPixelCoordinates($coordinates, imagesx($image), imagesy($image));
+        return imagecrop($image, $this->coordinatesArray($pxCoordinates));
     }
 
     /**
      * Inflates the coordinates with the factor. It makes sure you
      * can't inflate it more than the document is in size.
-     * @param $coordinates
+     * @param array $coordinates
      * @param float $factor
      * @return array
      */
     public function inflateCoordinates(array $coordinates, $factor)
     {
-        $newCoords = array(
+        $newCoordinates = array(
             'xmin' => $coordinates['xmin'] - $factor,
             'ymin' => $coordinates['ymin'] - $factor,
             'xmax' => $coordinates['xmax'] + $factor,
             'ymax' => $coordinates['ymax'] + $factor
         );
-        foreach ($newCoords as $key => $value) {
+        foreach ($newCoordinates as $key => $value) {
             if ($value < 0) {
-                $newCoords[$key] = 0;
+                $newCoordinates[$key] = 0;
             }
             if ($value > 1) {
-                $newCoords[$key] = 1;
+                $newCoordinates[$key] = 1;
             }
         }
-        return $newCoords;
+        return $newCoordinates;
     }
 
     /**
-     * Get the pixel coords based on the image and the inference
+     * Get the pixel coordinates based on the image and the inference
      * result
      * @param $floatCoordinates
      * @param null $imWidth
@@ -227,8 +225,8 @@ class Document
     public function getBoundingBoxPixelCoordinates($floatCoordinates, $imWidth = null, $imHeight = null)
     {
         if ($imWidth == null and $imHeight == null) {
-            $imWidth = imagesx($this->getImage());
-            $imHeight = imagesy($this->getImage());
+            $imWidth = imagesx($this->getOriginalImage());
+            $imHeight = imagesy($this->getOriginalImage());
         }
 
         $response = array(
@@ -260,7 +258,10 @@ class Document
 
     /**
      * Returns a the width and height in mm of the document
-     * @return array width, height
+     * @return array(
+     *              0 => width,
+     *              1 => height,
+     *              )
      */
     public function getActualSizeMm()
     {
@@ -270,7 +271,7 @@ class Document
 
     /**
      * Returns the raw model data via the Service
-     * @return null
+     * @return array|null
      */
     public function getModelData()
     {
@@ -292,7 +293,7 @@ class Document
      * @param bool $filterSides
      * @return resource
      */
-    public function maskZones(array $zones, $image = null, $filterSides = true)
+    public function maskZones(array $zones, $image = null, bool $filterSides = true)
     {
         if ($image == null) {
             $image = $this->getCroppedImage();
@@ -302,17 +303,22 @@ class Document
             if ($filterSides && $zone->getSide() != $this->getIdSide()) {
                 continue;
             }
-            $pxCoords = $this->getBoundingBoxPixelCoordinates($zone->getPositionInImage(), imagesx($image),
+            $pxCoordinates = $this->getBoundingBoxPixelCoordinates($zone->getPositionInImage(), imagesx($image),
                 imagesy($image));
-            imagefilledrectangle($image, $pxCoords['xmin'], $pxCoords['ymin'], $pxCoords['xmax'], $pxCoords['ymax'],
-                $color);
+            imagefilledrectangle(
+                $image, $pxCoordinates['xmin'],
+                $pxCoordinates['ymin'],
+                $pxCoordinates['xmax'],
+                $pxCoordinates['ymax'],
+                $color
+            );
         }
         return $image;
     }
 
     /**
      * Returns the zone that hold the MRZ
-     * @return mixed|null
+     * @return bool|null
      */
     public function getMrzZone()
     {
@@ -344,7 +350,7 @@ class Document
     }
 
     /**
-     * @param $pixelCoordinates array of xmin,ymin,xmax,ymax
+     * @param array $pixelCoordinates array of xmin,ymin,xmax,ymax
      * @return array of x, y, width, height
      */
     protected function coordinatesArray(array $pixelCoordinates)

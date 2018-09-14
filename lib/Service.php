@@ -16,7 +16,6 @@ require_once 'DocumentFactory.php';
  * service.
  *
  * See https://docs.verifai.com/server_docs/php-sdk-latest.html
- * @package Verifai
  */
 class Service
 {

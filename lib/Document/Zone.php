@@ -10,7 +10,6 @@ use Verifai\Document;
  *
  * Every zone has a position in the form of coordinates, a title, and
  * some operations.
- * @package Verifai
  */
 class Zone
 {

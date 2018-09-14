@@ -10,7 +10,6 @@ namespace Verifai\Document;
  *
  * You can create one by initializing it with a Zone
  * that contains a MRZ.
- * @package Verifai
  */
 class Mrz
 {

@@ -4,12 +4,11 @@
 namespace Verifai;
 
 
+/**
+ * Factory class for Document
+ */
 class DocumentFactory
 {
-    /**
-     * Factory class for Document
-     */
-
     /**
      * Creates document
      * @param Response $response
