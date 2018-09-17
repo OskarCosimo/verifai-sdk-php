@@ -5,17 +5,16 @@ namespace Verifai;
 require_once 'Document.php';
 require_once 'DocumentFactory.php';
 
-
 /**
  * The VerifaiService is your main component to use. It communicates
  * with various backend systems and handles all the privacy sensitive
  * data internally.
  *
- * To use the service you need to initialize it first with a API token
+ * To use the service you need to initialize it first with an API token
  * and the URL to the classifier service, and optional to the OCR
  * service.
  *
- * See https://docs.verifai.com/server_docs/php-sdk-latest.html
+ * See {@link https://docs.verifai.com/server_docs/php-sdk-latest.html}
  */
 class Service
 {
@@ -80,14 +79,17 @@ class Service
      * Please not that you need to provide the full path to the api
      * endpoint.
      *
+     * If you set $skipUnreachable to true, then the url will be added,
+     * even if we cannot confirm that the url belongs to a valid server
+     *
      * For example: http://localhost:5000/api/classify/
      *
      * You can add multiple servers to scale up operations.
-     * @param $url
+     * @param string $url
      * @param bool $skipUnreachable
      * @return bool
      */
-    public function addClassifierUrl(string $url, $skipUnreachable = false)
+    public function addClassifierUrl(string $url, bool $skipUnreachable = false)
     {
         return $this->addServerUrl($url, $skipUnreachable, 'classifier');
     }
@@ -97,14 +99,17 @@ class Service
      * Please not that you need to provide the full path to the api
      * endpoint.
      *
+     * If you set $skipUnreachable to true, then the url will be added,
+     * even if we cannot confirm that the url belongs to a valid server
+     *
      * For example: http://localhost:5001/api/ocr/
      *
      * You can add multiple servers to scale up operations.
-     * @param $url
+     * @param string $url
      * @param bool $skipUnreachable
      * @return bool
      */
-    public function addOcrUrl(string $url, $skipUnreachable = false)
+    public function addOcrUrl(string $url, bool $skipUnreachable = false)
     {
         return $this->addServerUrl($url, $skipUnreachable, 'ocr');
     }
@@ -113,7 +118,7 @@ class Service
      * Fetch the raw data from the API for further processing.
      *
      * Note: Since it is not a public API it is subject to changes.
-     * @param $id_uuid
+     * @param string $id_uuid
      * @return array|null
      */
     public function getModelData(string $id_uuid)
@@ -130,7 +135,7 @@ class Service
     /**
      * Sends the mrz_image (Image) to the Verifai OCR service, and
      * returns the raw response.
-     * @param $mrzImage
+     * @param resource $mrzImage
      * @return array
      */
     public function getOcrData($mrzImage)
@@ -140,9 +145,9 @@ class Service
     }
 
     /**
-     * Send a image to the Verifai Classifier and get a VerifaiDocument
+     * Send an image to the Verifai Classifier and get a VerifaiDocument
      * in return. If it fails to classify it will return null.
-     * @param $image
+     * @param resource $image
      * @return null|Document
      */
     public function classifyImage($image)
@@ -167,7 +172,7 @@ class Service
     /**
      * Send a image to the Verifai Classifier and get a VerifaiDocument
      * in return. If it fails to classify it will return None.
-     * @param $imagePath
+     * @param string $imagePath
      * @return null|Document
      */
     public function classifyImagePath(string $imagePath)
@@ -177,9 +182,9 @@ class Service
     }
 
     /**
-     * @param $url
+     * @param string $url
      * @param bool $skipUnreachable
-     * @param $type
+     * @param string $type
      * @return bool
      */
     protected function addServerUrl(string $url, $skipUnreachable = false, string $type)
@@ -191,7 +196,7 @@ class Service
     }
 
     /**
-     * @param $type
+     * @param string $type
      * @return string|null
      */
     protected function getUrl(string $type)
@@ -200,8 +205,8 @@ class Service
     }
 
     /**
-     * @param $path
-     * @param $params
+     * @param string $path
+     * @param array $params
      * @return mixed
      */
     protected function getFromApi(string $path, array $params)
@@ -225,7 +230,7 @@ class Service
     }
 
     /**
-     * @param $url
+     * @param string $url
      * @return bool
      */
     protected function checkServerUrl(string $url)
@@ -255,8 +260,8 @@ class Service
     }
 
     /**
-     * @param $url
-     * @param $image
+     * @param string $url
+     * @param resource $image
      * @return mixed
      */
     protected function sendImage(string $url, $image)
@@ -282,6 +287,11 @@ class Service
         return json_decode($response, true);
     }
 
+    /**
+     * curl_setopt doesn't use true anymore, but uses option 2 for ssl verification,
+     * this wrapper keeps users from having to deal with those options
+     * @return int
+     */
     private function curlSslVerify()
     {
         if ($this->sslVerify) {

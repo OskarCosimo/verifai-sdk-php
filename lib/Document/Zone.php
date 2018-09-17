@@ -32,8 +32,8 @@ class Zone
 
     /**
      * Zone constructor.
-     * @param $document
-     * @param $zoneData
+     * @param Document $document
+     * @param array $zoneData
      */
     public function __construct(Document $document, array $zoneData)
     {
@@ -47,7 +47,7 @@ class Zone
      * Return if this zone is the Machine Readable Zone
      * @return bool
      */
-    public function isMrz()
+    public function isMrz() : bool
     {
         return strtoupper($this->getTitle()) == 'MRZ';
     }
@@ -82,10 +82,10 @@ class Zone
     /**
      * Since the coordinate system of the zones is different this
      * method converts it to the xmin, ymin, xmax, ymax system.
-     * @param $xmin
-     * @param $ymin
-     * @param $width
-     * @param $height
+     * @param float $xmin
+     * @param float $ymin
+     * @param float $width
+     * @param float $height
      */
     public function setCoordinates($xmin, $ymin, $width, $height)
     {

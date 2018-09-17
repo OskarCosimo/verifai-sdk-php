@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Verifai;
-
 
 /**
  * Factory class for Document

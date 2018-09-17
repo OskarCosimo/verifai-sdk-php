@@ -9,8 +9,7 @@ require_once 'Utils.php';
 use Verifai\Document\Mrz;
 use Verifai\Document\Zone;
 
-
-/*
+/**
  * Once a classification has taken place the {@see Verifai\Service} will
  * return a instance of this class.
  *
