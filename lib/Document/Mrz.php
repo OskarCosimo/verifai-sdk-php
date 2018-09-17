@@ -2,7 +2,6 @@
 
 namespace Verifai\Document;
 
-
 /**
  * Modern documents have a Machine Readable Zone. This class is the
  * proxy between your code and the Verifai OCR service. You can get
@@ -10,7 +9,6 @@ namespace Verifai\Document;
  *
  * You can create one by initializing it with a Zone
  * that contains a MRZ.
- * @package Verifai
  */
 class Mrz
 {
@@ -25,8 +23,8 @@ class Mrz
     protected $mrzResponse;
 
     /**
-     * Mrz constructor.
-     * @param $zone
+     * Class constructor.
+     * @param Zone $zone
      */
     public function __construct(Zone $zone)
     {
@@ -43,7 +41,7 @@ class Mrz
     }
 
     /**
-     * Returns the raw OCR response form the OCR service
+     * Returns the raw OCR response from the OCR service
      * @return array|null
      */
     public function readMrz()
@@ -101,7 +99,7 @@ class Mrz
 
     /**
      * Returns the rotation that was required to read the MRZ
-     * @return integer|null
+     * @return int|null
      */
     public function getRotation()
     {

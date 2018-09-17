@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Verifai;
-
 
 final class Response
 {
@@ -19,6 +17,12 @@ final class Response
      */
     private $coords;
 
+    /**
+     * Class constructor.
+     * @param $uuid
+     * @param $side
+     * @param array $coords
+     */
     public function __construct($uuid, $side, array $coords)
     {
         $this->uuid = $uuid;
