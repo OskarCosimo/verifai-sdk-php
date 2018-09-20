@@ -317,7 +317,7 @@ class Document
 
     /**
      * Returns the zone that hold the MRZ
-     * @return bool|null
+     * @return Zone|null
      */
     public function getMrzZone()
     {
