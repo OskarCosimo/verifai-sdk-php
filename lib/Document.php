@@ -71,8 +71,8 @@ class Document
     protected $mrz;
 
     /**
-     * @param $response
-     * @param $service
+     * @param Response $response
+     * @param Service $service
      */
     public function __construct(Response $response, Service $service)
     {
@@ -110,6 +110,7 @@ class Document
 
     /**
      * Get the gd image
+     * Visit {@link http://php.net/manual/en/intro.image.php} for reference
      * @return resource
      */
     public function getOriginalImage()
@@ -216,9 +217,9 @@ class Document
     /**
      * Get the pixel coordinates based on the image and the inference
      * result
-     * @param $floatCoordinates
-     * @param null $imWidth
-     * @param null $imHeight
+     * @param array $floatCoordinates
+     * @param float|null $imWidth
+     * @param float|null $imHeight
      * @return array with the bounding box in pixels
      */
     public function getBoundingBoxPixelCoordinates($floatCoordinates, $imWidth = null, $imHeight = null)

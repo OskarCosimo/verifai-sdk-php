@@ -87,7 +87,7 @@ class Zone
      * @param float $width
      * @param float $height
      */
-    public function setCoordinates($xmin, $ymin, $width, $height)
+    public function setCoordinates(float $xmin, float $ymin, float $width, float $height)
     {
         $mm_size = $this->document->getActualSizeMm();
         $width_mm = $mm_size[0];

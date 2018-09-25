@@ -53,6 +53,9 @@ class Service
      */
     private $documentFactory;
 
+    /**
+     * @param DocumentFactory $documentFactory
+     */
     public function __construct(DocumentFactory $documentFactory)
     {
         $this->documentFactory = $documentFactory;

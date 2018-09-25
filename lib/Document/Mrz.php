@@ -23,7 +23,6 @@ class Mrz
     protected $mrzResponse;
 
     /**
-     * Class constructor.
      * @param Zone $zone
      */
     public function __construct(Zone $zone)
