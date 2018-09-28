@@ -2,6 +2,8 @@
 
 namespace Verifai\Document;
 
+use Verifai\Service;
+
 /**
  * Modern documents have a Machine Readable Zone. This class is the
  * proxy between your code and the Verifai OCR service. You can get
@@ -15,19 +17,26 @@ class Mrz
     /**
      * @var Zone|null
      */
-    public $zone;
+    private $zone;
 
     /**
      * @var array|null
      */
-    protected $mrzResponse;
+    private $mrzResponse;
+
+    /**
+     * @var Service|null
+     */
+    private $service;
 
     /**
      * @param Zone $zone
+     * @param Service|null $service
      */
-    public function __construct(Zone $zone)
+    public function __construct(Zone $zone, Service $service = null)
     {
         $this->zone = $zone;
+        $this->service = $service;
     }
 
     /**
@@ -50,7 +59,7 @@ class Mrz
         } else {
             $mrz = $this->zone;
             $mrzImage = $this->getDocument()->getPartOfCardImage($mrz->getPositionInImage(), .03);
-            $ocrResult = $this->getService()->getOcrData($mrzImage);
+            $ocrResult = $this->service->getOcrData($mrzImage);
             $this->mrzResponse = $ocrResult;
         }
         if ($ocrResult['status'] == 'NOT_FOUND') {
@@ -111,18 +120,9 @@ class Mrz
     /**
      * @return \Verifai\Document
      */
-    protected function getDocument()
+    private function getDocument()
     {
         return $this->zone->getDocument();
     }
-
-    /**
-     * @return \Verifai\Service
-     */
-    protected function getService()
-    {
-        return $this->getDocument()->getService();
-    }
-
 
 }

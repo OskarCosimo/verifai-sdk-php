@@ -60,15 +60,15 @@ class Document
     /**
      * @var array|null
      */
-    protected $modelData;
+    private $modelData;
     /**
      * @var array|null
      */
-    protected $zones;
+    private $zones;
     /**
      * @var Mrz|null
      */
-    protected $mrz;
+    private $mrz;
 
     /**
      * @param Response $response
@@ -80,14 +80,6 @@ class Document
         $this->idUuid = $response->getUuid();
         $this->idSide = $response->getSide();
         $this->coordinates = $response->getCoords();
-    }
-
-    /**
-     * @return Service
-     */
-    public function getService()
-    {
-        return $this->service;
     }
 
     /**
@@ -339,7 +331,7 @@ class Document
         if ($this->mrz == null) {
             $zone = $this->getMrzZone();
             if ($zone !== null) {
-                $this->mrz = new Document\Mrz($zone);
+                $this->mrz = new Document\Mrz($zone, $this->service);
                 return $this->mrz;
             }
         }
@@ -353,7 +345,7 @@ class Document
      * @param array $pixelCoordinates array of xmin,ymin,xmax,ymax
      * @return array of x, y, width, height
      */
-    protected function coordinatesArray(array $pixelCoordinates)
+    private function coordinatesArray(array $pixelCoordinates)
     {
         $response = array(
             'x' => $pixelCoordinates['xmin'],
