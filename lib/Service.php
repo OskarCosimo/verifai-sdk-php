@@ -42,11 +42,11 @@ class Service
     /**
      * @var array
      */
-    protected $serverUrls = array('classifier' => array(), 'ocr' => array());
+    private $serverUrls = array('classifier' => array(), 'ocr' => array());
     /**
      * @var array
      */
-    protected $urlRoundRobbin = array('classifier' => 0, 'ocr' => 0);
+    private $urlRoundRobbin = array('classifier' => 0, 'ocr' => 0);
 
     /**
      * @var DocumentFactory
@@ -64,7 +64,7 @@ class Service
     /**
      * @return string|null
      */
-    protected function getApiToken()
+    private function getApiToken()
     {
         return $this->apiToken;
     }
@@ -72,7 +72,7 @@ class Service
     /**
      * @return string
      */
-    protected function getBaseApiUrl()
+    private function getBaseApiUrl()
     {
         return $this->baseApiUrl;
     }
@@ -190,7 +190,7 @@ class Service
      * @param string $type
      * @return bool
      */
-    protected function addServerUrl(string $url, string $type, $skipUnreachable = false)
+    private function addServerUrl(string $url, string $type, $skipUnreachable = false)
     {
         if ($skipUnreachable or $this->checkServerUrl($url)) {
             $this->serverUrls[$type][] = $url;
@@ -202,7 +202,7 @@ class Service
      * @param string $type
      * @return string|null
      */
-    protected function getUrl(string $type)
+    private function getUrl(string $type)
     {
         return $this->serverUrls[$type][0];
     }
@@ -212,7 +212,7 @@ class Service
      * @param array $params
      * @return mixed
      */
-    protected function getFromApi(string $path, array $params)
+    private function getFromApi(string $path, array $params)
     {
         $GET = http_build_query($params);
 
@@ -236,7 +236,7 @@ class Service
      * @param string $url
      * @return bool
      */
-    protected function checkServerUrl(string $url)
+    private function checkServerUrl(string $url)
     {
         $ch = curl_init();
 
@@ -269,7 +269,7 @@ class Service
      * @param resource $image
      * @return mixed
      */
-    protected function sendImage(string $url, $image)
+    private function sendImage(string $url, $image)
     {
         $tmp = tempnam('', 'verifai_image');
         imagejpeg($image, $tmp);
