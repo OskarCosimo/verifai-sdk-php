@@ -94,7 +94,7 @@ class Service
      */
     public function addClassifierUrl(string $url, bool $skipUnreachable = false)
     {
-        return $this->addServerUrl($url, $skipUnreachable, 'classifier');
+        return $this->addServerUrl($url,'classifier', $skipUnreachable);
     }
 
     /**
@@ -114,7 +114,7 @@ class Service
      */
     public function addOcrUrl(string $url, bool $skipUnreachable = false)
     {
-        return $this->addServerUrl($url, $skipUnreachable, 'ocr');
+        return $this->addServerUrl($url, 'ocr', $skipUnreachable);
     }
 
     /**
@@ -190,10 +190,10 @@ class Service
      * @param string $type
      * @return bool
      */
-    protected function addServerUrl(string $url, $skipUnreachable = false, string $type)
+    protected function addServerUrl(string $url, string $type, $skipUnreachable = false)
     {
         if ($skipUnreachable or $this->checkServerUrl($url)) {
-            $this->serverUrls[$type][] = $url;
+            array_push($this->serverUrls[$type], $url);
         }
         return true;
     }
@@ -254,7 +254,8 @@ class Service
 
         // Find the options
         preg_match("/Allow: ([A-Z, ]*)/", $response, $matches);
-        $options = explode(',', str_replace(" ", "", $matches[1]));
+        $m = str_replace(' ', '', $matches[1] . ' ');
+        $options = explode(',', $m);
         sort($options);
         curl_close($ch);
 
