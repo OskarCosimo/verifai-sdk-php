@@ -7,7 +7,10 @@
     "license": "Apache-2.0",
     "minimum-stability": "dev",
     "require": {
-    	"php": ">=7.0.0"
+    	"php": ">=7.0.0",
+        "ext-gd": "*",
+        "ext-curl": "*",
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {
