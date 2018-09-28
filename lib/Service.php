@@ -254,8 +254,9 @@ class Service
 
         // Find the options
         preg_match("/Allow: ([A-Z, ]*)/", $response, $matches);
-        $m = str_replace(' ', '', $matches[1] . ' ');
-        $options = explode(',', $m);
+        // check whether we have received valid response
+        if (sizeof($matches) < 2) return false;
+        $options = explode(',', str_replace(' ', '', $matches[1]));
         sort($options);
         curl_close($ch);
 
