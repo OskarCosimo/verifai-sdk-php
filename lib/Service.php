@@ -193,7 +193,7 @@ class Service
     protected function addServerUrl(string $url, string $type, $skipUnreachable = false)
     {
         if ($skipUnreachable or $this->checkServerUrl($url)) {
-            array_push($this->serverUrls[$type], $url);
+            $this->serverUrls[$type][] = $url;
         }
         return true;
     }
