@@ -47,7 +47,7 @@ class Zone
      * Return if this zone is the Machine Readable Zone
      * @return bool
      */
-    public function isMrz() : bool
+    public function isMrz(): bool
     {
         return strtoupper($this->getTitle()) == 'MRZ';
     }
@@ -56,7 +56,7 @@ class Zone
      * Title of the zone
      * @return string
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -65,7 +65,7 @@ class Zone
      * F for front, and B for back
      * @return string
      */
-    public function getSide()
+    public function getSide(): string
     {
         return $this->side;
     }
@@ -114,7 +114,7 @@ class Zone
      * Returns: xmin, ymin, xmax, ymax coordinates
      * @return array
      */
-    public function getPositionInImage()
+    public function getPositionInImage(): array
     {
         return $this->coordinates;
     }
@@ -123,7 +123,7 @@ class Zone
      * Returns the document
      * @return null|Document
      */
-    public function getDocument()
+    public function getDocument(): ?Document
     {
         return $this->document;
     }

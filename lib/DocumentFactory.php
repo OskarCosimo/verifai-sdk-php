@@ -14,7 +14,7 @@ class DocumentFactory
      * @param string $binaryJpegImage
      * @return Document
      */
-    public function create(Response $response, Service $service, string $binaryJpegImage)
+    public function create(Response $response, Service $service, string $binaryJpegImage): Document
     {
         $document = new Document($response, $service);
         $document->loadImage($binaryJpegImage);

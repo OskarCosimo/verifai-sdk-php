@@ -3,7 +3,7 @@
 namespace Verifai\Document;
 
 use Verifai\Service;
-
+use Verifai\Document;
 /**
  * Modern documents have a Machine Readable Zone. This class is the
  * proxy between your code and the Verifai OCR service. You can get
@@ -43,7 +43,7 @@ class Mrz
      * Returns weather the OCR has been successful
      * @return bool
      */
-    public function isSuccessful()
+    public function isSuccessful(): bool
     {
         return $this->readMrz()['status'] == 'SUCCESS';
     }
@@ -52,7 +52,7 @@ class Mrz
      * Returns the raw OCR response from the OCR service
      * @return array|null
      */
-    public function readMrz()
+    public function readMrz(): ?array
     {
         if ($this->mrzResponse !== null) {
             $ocrResult = $this->mrzResponse;
@@ -73,7 +73,7 @@ class Mrz
      * Returns the fields form the MRZ
      * @return array|null
      */
-    public function getFields()
+    public function getFields(): ?array
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['result']['fields'];
@@ -85,7 +85,7 @@ class Mrz
      * Returns the raw fields form the MRZ
      * @return array|null
      */
-    public function getFieldsRaw()
+    public function getFieldsRaw(): ?array
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['result']['fields_raw'];
@@ -97,7 +97,7 @@ class Mrz
      * Returns the checksum results for the MRZ
      * @return array|null
      */
-    public function getChecksums()
+    public function getChecksums(): ?array
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['result']['checksums'];
@@ -109,7 +109,7 @@ class Mrz
      * Returns the rotation that was required to read the MRZ
      * @return int|null
      */
-    public function getRotation()
+    public function getRotation(): ?int
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['rotation'];
@@ -118,9 +118,9 @@ class Mrz
     }
 
     /**
-     * @return \Verifai\Document
+     * @return Document
      */
-    private function getDocument()
+    private function getDocument(): Document
     {
         return $this->zone->getDocument();
     }

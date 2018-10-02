@@ -64,7 +64,7 @@ class Service
     /**
      * @return string|null
      */
-    private function getApiToken()
+    private function getApiToken(): ?string
     {
         return $this->apiToken;
     }
@@ -72,7 +72,7 @@ class Service
     /**
      * @return string
      */
-    private function getBaseApiUrl()
+    private function getBaseApiUrl(): string
     {
         return $this->baseApiUrl;
     }
@@ -92,7 +92,7 @@ class Service
      * @param bool $skipUnreachable
      * @return bool
      */
-    public function addClassifierUrl(string $url, bool $skipUnreachable = false)
+    public function addClassifierUrl(string $url, bool $skipUnreachable = false): bool
     {
         return $this->addServerUrl($url,'classifier', $skipUnreachable);
     }
@@ -112,7 +112,7 @@ class Service
      * @param bool $skipUnreachable
      * @return bool
      */
-    public function addOcrUrl(string $url, bool $skipUnreachable = false)
+    public function addOcrUrl(string $url, bool $skipUnreachable = false): bool
     {
         return $this->addServerUrl($url, 'ocr', $skipUnreachable);
     }
@@ -124,7 +124,7 @@ class Service
      * @param string $id_uuid
      * @return array|null
      */
-    public function getModelData(string $id_uuid)
+    public function getModelData(string $id_uuid): ?array
     {
         $data = $this->getFromApi('id-models', array(
             'uuid' => $id_uuid
@@ -141,7 +141,7 @@ class Service
      * @param resource $mrzImage
      * @return array
      */
-    public function getOcrData($mrzImage)
+    public function getOcrData($mrzImage): array
     {
         $response = $this->sendImage($this->getUrl('ocr'), $mrzImage);
         return $response;
@@ -153,7 +153,7 @@ class Service
      * @param resource $image
      * @return null|Document
      */
-    public function classifyImage($image)
+    public function classifyImage($image): ?Document
     {
         $json_response = $this->sendImage($this->getUrl('classifier'), $image);
 
@@ -178,7 +178,7 @@ class Service
      * @param string $imagePath
      * @return null|Document
      */
-    public function classifyImagePath(string $imagePath)
+    public function classifyImagePath(string $imagePath): ?Document
     {
         $gdImage = imagecreatefromjpeg($imagePath);
         return $this->classifyImage($gdImage);
@@ -190,7 +190,7 @@ class Service
      * @param string $type
      * @return bool
      */
-    private function addServerUrl(string $url, string $type, $skipUnreachable = false)
+    private function addServerUrl(string $url, string $type, $skipUnreachable = false): bool
     {
         if ($skipUnreachable or $this->checkServerUrl($url)) {
             $this->serverUrls[$type][] = $url;
@@ -202,7 +202,7 @@ class Service
      * @param string $type
      * @return string|null
      */
-    private function getUrl(string $type)
+    private function getUrl(string $type): ?string
     {
         if($this->urlRoundRobin[$type] == sizeof($this->serverUrls[$type])) {
             $this->urlRoundRobin[$type] = 0;
@@ -239,7 +239,7 @@ class Service
      * @param string $url
      * @return bool
      */
-    private function checkServerUrl(string $url)
+    private function checkServerUrl(string $url): bool
     {
         $ch = curl_init();
 
@@ -300,7 +300,7 @@ class Service
      * this wrapper keeps users from having to deal with those options
      * @return int
      */
-    private function curlSslVerify()
+    private function curlSslVerify(): int
     {
         if ($this->sslVerify) {
             return 2;

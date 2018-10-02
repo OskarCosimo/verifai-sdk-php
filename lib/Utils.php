@@ -32,7 +32,7 @@ final class Response
     /**
      * @return string
      */
-    public function getUuid()
+    public function getUuid(): string
     {
         return $this->uuid;
     }
@@ -40,7 +40,7 @@ final class Response
     /**
      * @return string
      */
-    public function getSide()
+    public function getSide(): string
     {
         return $this->side;
     }
@@ -48,7 +48,7 @@ final class Response
     /**
      * @return array
      */
-    public function getCoords()
+    public function getCoords(): array
     {
         return $this->coords;
     }
