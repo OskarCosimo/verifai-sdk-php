@@ -270,9 +270,9 @@ class Service
     /**
      * @param string $url
      * @param resource $image
-     * @return mixed
+     * @return array
      */
-    private function sendImage(string $url, $image)
+    private function sendImage(string $url, $image): array
     {
         $tmp = tempnam('', 'verifai_image');
         imagejpeg($image, $tmp);
