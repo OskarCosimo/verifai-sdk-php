@@ -34,7 +34,7 @@ your own network. Data we do not have, we can not loose.
 
 Therefore the heavy lifting takes place in the
 "Verifai Server-side Classifier" and the SDK. The SDK sends a JPEG image
-to it via a HTTP POST request, and it responds with a JSON result. The SDK
+to "Verifai Server-side Classifier" via a HTTP POST request, and it responds with a JSON result. The SDK
 processes that response for you. You only have to tell it where the
 "Server-side Classifier" is within your network.
 
