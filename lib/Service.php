@@ -139,9 +139,9 @@ class Service
      * Sends the mrz_image (Image) to the Verifai OCR service, and
      * returns the raw response.
      * @param resource $mrzImage
-     * @return array
+     * @return null|array
      */
-    public function getOcrData($mrzImage): array
+    public function getOcrData($mrzImage): ?array
     {
         $response = $this->sendImage($this->getUrl('ocr'), $mrzImage);
         return $response;
@@ -213,9 +213,9 @@ class Service
     /**
      * @param string $path
      * @param array $params
-     * @return mixed
+     * @return null|array
      */
-    private function getFromApi(string $path, array $params)
+    private function getFromApi(string $path, array $params): ?array
     {
         $GET = http_build_query($params);
 
@@ -270,9 +270,9 @@ class Service
     /**
      * @param string $url
      * @param resource $image
-     * @return array
+     * @return null|array
      */
-    private function sendImage(string $url, $image): array
+    private function sendImage(string $url, $image): ?array
     {
         $tmp = tempnam('', 'verifai_image');
         imagejpeg($image, $tmp);
