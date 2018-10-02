@@ -46,7 +46,7 @@ class Service
     /**
      * @var array
      */
-    private $urlRoundRobbin = array('classifier' => 0, 'ocr' => 0);
+    private $urlRoundRobin = array('classifier' => 0, 'ocr' => 0);
 
     /**
      * @var DocumentFactory
@@ -204,7 +204,10 @@ class Service
      */
     private function getUrl(string $type)
     {
-        return $this->serverUrls[$type][0];
+        if($this->urlRoundRobin[$type] == sizeof($this->serverUrls[$type])) {
+            $this->urlRoundRobin[$type] = 0;
+        }
+        return $this->serverUrls[$type][$this->urlRoundRobin[$type]++];
     }
 
     /**
