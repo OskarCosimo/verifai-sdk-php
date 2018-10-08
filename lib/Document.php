@@ -2,10 +2,6 @@
 
 namespace Verifai;
 
-require_once 'Document/Zone.php';
-require_once 'Document/Mrz.php';
-require_once 'Utils.php';
-
 use Verifai\Document\Mrz;
 use Verifai\Document\Zone;
 

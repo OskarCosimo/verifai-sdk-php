@@ -1,7 +1,6 @@
 <?php
 
-require_once 'lib/DocumentFactory.php';
-require_once 'lib/Service.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 use Verifai\Service;
 use Verifai\DocumentFactory;

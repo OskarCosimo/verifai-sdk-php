@@ -2,9 +2,6 @@
 
 namespace Verifai;
 
-require_once 'Document.php';
-require_once 'DocumentFactory.php';
-
 /**
  * The VerifaiService is your main component to use. It communicates
  * with various backend systems and handles all the privacy sensitive
