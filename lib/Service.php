@@ -94,7 +94,7 @@ class Service
      */
     public function addClassifierUrl(string $url, bool $skipUnreachable = false): bool
     {
-        return $this->addServerUrl($url,'classifier', $skipUnreachable);
+        return $this->addServerUrl($url, 'classifier', $skipUnreachable);
     }
 
     /**

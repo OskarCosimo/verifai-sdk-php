@@ -4,6 +4,7 @@ namespace Verifai\Document;
 
 use Verifai\Service;
 use Verifai\Document;
+
 /**
  * Modern documents have a Machine Readable Zone. This class is the
  * proxy between your code and the Verifai OCR service. You can get

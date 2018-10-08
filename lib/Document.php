@@ -214,7 +214,7 @@ class Document
      * @param float|null $imHeight
      * @return array with the bounding box in pixels
      */
-    public function getBoundingBoxPixelCoordinates($floatCoordinates, $imWidth = null, $imHeight = null): array
+    public function getBoundingBoxPixelCoordinates(array $floatCoordinates, float $imWidth = null, float $imHeight = null): array
     {
         if ($imWidth == null and $imHeight == null) {
             $imWidth = imagesx($this->getOriginalImage());
