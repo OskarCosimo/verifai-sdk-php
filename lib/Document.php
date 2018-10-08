@@ -1,126 +1,220 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: joshua
- * Date: 31/05/2018
- * Time: 14:21
- */
 
 namespace Verifai;
 
-require_once 'DocumentZone.php';
-require_once 'DocumentMrz.php';
+use Verifai\Document\Mrz;
+use Verifai\Document\Zone;
+
+/**
+ * Once a classification has taken place the {@see Verifai\Service} will
+ * return a instance of this class.
+ *
+ * It represents the data we collected for you, and provides several
+ * operations like getting additional information and getting a cropped
+ * image of the document.
+ *
+ * Some operations require communication to external services.
+ * Everything is lazy, and will be collected upon request. When that
+ * has happened it will be cached in memory as long as the object
+ * lives.
+ */
 
 class Document
 {
-    public $service = null;
-    public $idUuid = null;
-    public $idSide = null;
-    public $coordinates = null;
+    /**
+     * Verifai Service to use to communicate
+     * @var Service
+     */
+    private $service;
+    /**
+     * The document internal Verifai ID
+     * @var string|null
+     */
+    private $idUuid;
+    /**
+     * The side of the ID, "F"ront or "B"ack
+     * @var string|null
+     */
+    private $idSide;
+    /**
+     * Array of xmin,ymin,xmax,ymax coordinates
+     * @var array|null
+     */
+    private $coordinates;
 
-    public $image = null;
-    public $croppedImage = null;
+    /**
+     * Original Image
+     * @var resource|null
+     */
+    private $originalImage;
+    /**
+     * Cropped image when a crop has been triggered it will be set
+     * @var resource|null
+     */
+    private $croppedImage;
 
-    protected $modelData = null;
-    protected $zones = null;
-    protected $mrz = null;
+    /**
+     * @var array|null
+     */
+    private $modelData;
+    /**
+     * @var array|null
+     */
+    private $zones;
+    /**
+     * @var Mrz|null
+     */
+    private $mrz;
 
-    public function __construct($response, $binaryJpegImage, $service)
+    /**
+     * @param Response $response
+     * @param Service $service
+     */
+    public function __construct(Response $response, Service $service)
     {
         $this->service = $service;
-        $this->idUuid = $response['uuid'];
-        $this->idSide = $response['side'];
-        $this->coordinates = $response['coords'];
-        $this->loadImage($binaryJpegImage);
+        $this->idUuid = $response->getUuid();
+        $this->idSide = $response->getSide();
+        $this->coordinates = $response->getCoords();
     }
 
-    public function getService()
-    {
-        return $this->service;
-    }
-
-    public function getIdUuid()
+    /**
+     * Get the internal Verifai ID
+     * @return string
+     */
+    public function getIdUuid(): string
     {
         return $this->idUuid;
     }
 
-    public function getIdSide()
+    /**
+     * Get the side of the document
+     * @return string
+     */
+    public function getIdSide(): string
     {
         return $this->idSide;
     }
 
-    public function getImage()
+    /**
+     * Get the gd image
+     * Visit {@link http://php.net/manual/en/intro.image.php} for reference
+     * @return resource
+     */
+    public function getOriginalImage()
     {
-        return $this->image;
+        return $this->originalImage;
     }
 
+    /**
+     * Cuts out the document from the entire image and returns the
+     * cropped image
+     * @return resource
+     */
     public function getCroppedImage()
     {
         if ($this->croppedImage != null) {
             return $this->croppedImage;
         }
-        $pxCoords = $this->getBoundingBoxPixelCoordinates($this->getPositionInImage());
-        $this->croppedImage = imagecrop($this->image, $this->coordinatesArray($pxCoords));
+        $pxCoordinates = $this->getBoundingBoxPixelCoordinates($this->getPositionInImage());
+        $this->croppedImage = imagecrop($this->originalImage, $this->coordinatesArray($pxCoordinates));
         return $this->croppedImage;
     }
 
-    public function getModel()
+    /**
+     * Returns the model name
+     * @return string
+     */
+    public function getModel(): string
     {
         return $this->getModelData()['model'];
     }
 
-    public function getCountry()
+    /**
+     * Returns the Alpha-2 county code. For example "NL"
+     * @return string
+     */
+    public function getCountry(): string
     {
         return $this->getModelData()['country'];
     }
 
-    public function getPositionInImage()
+    /**
+     * Return the coordinates where te document is located
+     * @return array|null
+     */
+    public function getPositionInImage(): ?array
     {
         return $this->coordinates;
     }
 
-    public function loadImage($binaryJpeg)
+    /**
+     * Load filecontents into the object, and use that as image
+     * @param string $binaryJpeg
+     */
+    public function loadImage(string $binaryJpeg)
     {
-        $tmp = tempnam('', 'verifai_image');
-        file_put_contents($tmp, $binaryJpeg);
-        $this->image = imagecreatefromjpeg($tmp);
-        unlink($tmp);
+        $this->originalImage = imagecreatefromstring($binaryJpeg);
+        $this->croppedImage = null;
     }
 
-    public function getPartOfCardImage($coordinates, $tolerance = 0)
+    /**
+     * Every document consists of a lot of parts. You can get some
+     * parts of the document by giving the coordinates.
+     * It returns a new image resource.
+     * @param array $coordinates of xmin,ymin,xmax,ymax
+     * @param float $tolerance
+     * @return resource
+     */
+    public function getPartOfCardImage(array $coordinates, $tolerance = 0.0)
     {
         $image = $this->getCroppedImage();
-        if ($tolerance > 0) {
+        if ($tolerance > 0.0) {
             $coordinates = $this->inflateCoordinates($coordinates, $tolerance);
         }
-        $pxCoords = $this->getBoundingBoxPixelCoordinates($coordinates, imagesx($image), imagesy($image));
-        return imagecrop($image, $this->coordinatesArray($pxCoords));
+        $pxCoordinates = $this->getBoundingBoxPixelCoordinates($coordinates, imagesx($image), imagesy($image));
+        return imagecrop($image, $this->coordinatesArray($pxCoordinates));
     }
 
-    public function inflateCoordinates($coordinates, $factor)
+    /**
+     * Inflates the coordinates with the factor. It makes sure you
+     * can't inflate it more than the document is in size.
+     * @param array $coordinates
+     * @param float $factor
+     * @return array
+     */
+    public function inflateCoordinates(array $coordinates, $factor): array
     {
-        $newCoords = array(
+        $newCoordinates = array(
             'xmin' => $coordinates['xmin'] - $factor,
             'ymin' => $coordinates['ymin'] - $factor,
             'xmax' => $coordinates['xmax'] + $factor,
             'ymax' => $coordinates['ymax'] + $factor
         );
-        foreach ($newCoords as $key => $value) {
+        foreach ($newCoordinates as $key => $value) {
             if ($value < 0) {
-                $newCoords[$key] = 0;
+                $newCoordinates[$key] = 0;
             }
             if ($value > 1) {
-                $newCoords[$key] = 1;
+                $newCoordinates[$key] = 1;
             }
         }
-        return $newCoords;
+        return $newCoordinates;
     }
 
-    public function getBoundingBoxPixelCoordinates($floatCoordinates, $imWidth = null, $imHeight = null)
+    /**
+     * Get the pixel coordinates based on the image and the inference
+     * result
+     * @param array $floatCoordinates
+     * @param float|null $imWidth
+     * @param float|null $imHeight
+     * @return array with the bounding box in pixels
+     */
+    public function getBoundingBoxPixelCoordinates(array $floatCoordinates, float $imWidth = null, float $imHeight = null): array
     {
         if ($imWidth == null and $imHeight == null) {
-            $imWidth = imagesx($this->getImage());
-            $imHeight = imagesy($this->getImage());
+            $imWidth = imagesx($this->getOriginalImage());
+            $imHeight = imagesy($this->getOriginalImage());
         }
 
         $response = array(
@@ -132,35 +226,62 @@ class Document
         return $response;
     }
 
-    public function getZones()
+    /**
+     * Returns a list of Zone objects
+     * @return array
+     */
+    public function getZones(): array
     {
         if ($this->zones === null) {
             $data = $this->getModelData();
             $this->zones = array();
             if ($data) {
                 foreach ($data['zones'] as $zoneData) {
-                    $this->zones[] = new DocumentZone($this, $zoneData);
+                    $this->zones[] = new Zone($this, $zoneData);
                 }
             }
         }
         return $this->zones;
     }
 
-    public function getActualSizeMm()
+    /**
+     * Returns a the width and height in mm of the document
+     * @return array(
+     *              0 => width,
+     *              1 => height,
+     *              )
+     */
+    public function getActualSizeMm(): array
     {
         $data = $this->getModelData();
         return array(floatval($data['width_mm']), floatval($data['height_mm']));
     }
 
-    public function getModelData()
+    /**
+     * Returns the raw model data via the Service
+     * @return array|null
+     */
+    public function getModelData(): ?array
     {
         if (!$this->modelData) {
-            $this->modelData = $this->getService()->getModelData($this->getIdUuid());
+            $this->modelData = $this->service->getModelData($this->getIdUuid());
         }
         return $this->modelData;
     }
 
-    public function maskZones($zones, $image = null, $filterSides = true)
+    /**
+     * Function to mask zones and return the masked image.
+     *
+     * It takes a list of Zone objects, and draws black
+     * squares on the coordinates of the zone.
+     *
+     * By default it filters out the zones that are for the other side.
+     * @param Zone[] $zones
+     * @param null|resource $image
+     * @param bool $filterSides
+     * @return resource
+     */
+    public function maskZones(array $zones, $image = null, bool $filterSides = true)
     {
         if ($image == null) {
             $image = $this->getCroppedImage();
@@ -170,13 +291,24 @@ class Document
             if ($filterSides && $zone->getSide() != $this->getIdSide()) {
                 continue;
             }
-            $pxCoords = $this->getBoundingBoxPixelCoordinates($zone->getPositionInImage(), imagesx($image), imagesy($image));
-            imagefilledrectangle($image, $pxCoords['xmin'], $pxCoords['ymin'], $pxCoords['xmax'], $pxCoords['ymax'], $color);
+            $pxCoordinates = $this->getBoundingBoxPixelCoordinates($zone->getPositionInImage(), imagesx($image),
+                imagesy($image));
+            imagefilledrectangle(
+                $image, $pxCoordinates['xmin'],
+                $pxCoordinates['ymin'],
+                $pxCoordinates['xmax'],
+                $pxCoordinates['ymax'],
+                $color
+            );
         }
         return $image;
     }
 
-    public function getMrzZone()
+    /**
+     * Returns the zone that hold the MRZ
+     * @return Zone|null
+     */
+    public function getMrzZone(): ?Zone
     {
         foreach ($this->getZones() as $zone) {
             if ($zone->isMrz()) {
@@ -186,12 +318,16 @@ class Document
         return null;
     }
 
-    public function getMrz()
+    /**
+     * Returns the Mrz object of the getMrzZone
+     * @return null|Mrz
+     */
+    public function getMrz(): ?Mrz
     {
         if ($this->mrz == null) {
             $zone = $this->getMrzZone();
             if ($zone !== null) {
-                $this->mrz = new DocumentMrz($zone);
+                $this->mrz = new Mrz($zone, $this->service);
                 return $this->mrz;
             }
         }
@@ -201,7 +337,11 @@ class Document
         return null;
     }
 
-    protected function coordinatesArray($pixelCoordinates)
+    /**
+     * @param array $pixelCoordinates array of xmin,ymin,xmax,ymax
+     * @return array of x, y, width, height
+     */
+    private function coordinatesArray(array $pixelCoordinates): array
     {
         $response = array(
             'x' => $pixelCoordinates['xmin'],
