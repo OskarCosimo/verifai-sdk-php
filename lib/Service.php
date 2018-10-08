@@ -22,7 +22,7 @@ class Service
 
     /**
      * API Token to communicate with Verifai Backend
-     * @var string
+     * @var string|null
      */
     public $apiToken;
     /**
@@ -61,7 +61,7 @@ class Service
     /**
      * @return string|null
      */
-    private function getApiToken(): ?string
+    public function getApiToken(): ?string
     {
         return $this->apiToken;
     }
@@ -69,7 +69,7 @@ class Service
     /**
      * @return string
      */
-    private function getBaseApiUrl(): string
+    public function getBaseApiUrl(): string
     {
         return $this->baseApiUrl;
     }
