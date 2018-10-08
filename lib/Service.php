@@ -154,7 +154,7 @@ class Service
     {
         $json_response = $this->sendImage($this->getUrl('classifier'), $image);
 
-        if ($json_response['status'] == 'SUCCESS') {
+        if ($json_response && $json_response['status'] == 'SUCCESS') {
             $handle = fopen('php://memory', 'w+');
             imagejpeg($image, $handle);
             fseek($handle, 0);
@@ -201,7 +201,10 @@ class Service
      */
     private function getUrl(string $type): ?string
     {
-        if($this->urlRoundRobin[$type] == count($this->serverUrls[$type])) {
+        $array_count = count($this->serverUrls[$type]);
+        if($array_count == 0) {
+            return null;
+        }else if($this->urlRoundRobin[$type] == $array_count) {
             $this->urlRoundRobin[$type] = 0;
         }
         return $this->serverUrls[$type][$this->urlRoundRobin[$type]++];
