@@ -18,12 +18,11 @@ final class Response
     private $coords;
 
     /**
-     * Class constructor.
-     * @param $uuid
-     * @param $side
+     * @param string $uuid
+     * @param string $side
      * @param array $coords
      */
-    public function __construct($uuid, $side, array $coords)
+    public function __construct(string $uuid, string $side, array $coords)
     {
         $this->uuid = $uuid;
         $this->side = $side;
@@ -33,7 +32,7 @@ final class Response
     /**
      * @return string
      */
-    public function getUuid()
+    public function getUuid(): string
     {
         return $this->uuid;
     }
@@ -41,7 +40,7 @@ final class Response
     /**
      * @return string
      */
-    public function getSide()
+    public function getSide(): string
     {
         return $this->side;
     }
@@ -49,7 +48,7 @@ final class Response
     /**
      * @return array
      */
-    public function getCoords()
+    public function getCoords(): array
     {
         return $this->coords;
     }

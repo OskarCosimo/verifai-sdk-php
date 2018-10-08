@@ -2,10 +2,6 @@
 
 namespace Verifai;
 
-require_once 'Document/Zone.php';
-require_once 'Document/Mrz.php';
-require_once 'Utils.php';
-
 use Verifai\Document\Mrz;
 use Verifai\Document\Zone;
 
@@ -60,19 +56,19 @@ class Document
     /**
      * @var array|null
      */
-    protected $modelData;
+    private $modelData;
     /**
      * @var array|null
      */
-    protected $zones;
+    private $zones;
     /**
      * @var Mrz|null
      */
-    protected $mrz;
+    private $mrz;
 
     /**
-     * @param $response
-     * @param $service
+     * @param Response $response
+     * @param Service $service
      */
     public function __construct(Response $response, Service $service)
     {
@@ -83,18 +79,10 @@ class Document
     }
 
     /**
-     * @return Service
-     */
-    public function getService()
-    {
-        return $this->service;
-    }
-
-    /**
      * Get the internal Verifai ID
      * @return string
      */
-    public function getIdUuid()
+    public function getIdUuid(): string
     {
         return $this->idUuid;
     }
@@ -103,13 +91,14 @@ class Document
      * Get the side of the document
      * @return string
      */
-    public function getIdSide()
+    public function getIdSide(): string
     {
         return $this->idSide;
     }
 
     /**
      * Get the gd image
+     * Visit {@link http://php.net/manual/en/intro.image.php} for reference
      * @return resource
      */
     public function getOriginalImage()
@@ -136,7 +125,7 @@ class Document
      * Returns the model name
      * @return string
      */
-    public function getModel()
+    public function getModel(): string
     {
         return $this->getModelData()['model'];
     }
@@ -145,7 +134,7 @@ class Document
      * Returns the Alpha-2 county code. For example "NL"
      * @return string
      */
-    public function getCountry()
+    public function getCountry(): string
     {
         return $this->getModelData()['country'];
     }
@@ -154,7 +143,7 @@ class Document
      * Return the coordinates where te document is located
      * @return array|null
      */
-    public function getPositionInImage()
+    public function getPositionInImage(): ?array
     {
         return $this->coordinates;
     }
@@ -194,7 +183,7 @@ class Document
      * @param float $factor
      * @return array
      */
-    public function inflateCoordinates(array $coordinates, $factor)
+    public function inflateCoordinates(array $coordinates, $factor): array
     {
         $newCoordinates = array(
             'xmin' => $coordinates['xmin'] - $factor,
@@ -216,12 +205,12 @@ class Document
     /**
      * Get the pixel coordinates based on the image and the inference
      * result
-     * @param $floatCoordinates
-     * @param null $imWidth
-     * @param null $imHeight
+     * @param array $floatCoordinates
+     * @param float|null $imWidth
+     * @param float|null $imHeight
      * @return array with the bounding box in pixels
      */
-    public function getBoundingBoxPixelCoordinates($floatCoordinates, $imWidth = null, $imHeight = null)
+    public function getBoundingBoxPixelCoordinates(array $floatCoordinates, float $imWidth = null, float $imHeight = null): array
     {
         if ($imWidth == null and $imHeight == null) {
             $imWidth = imagesx($this->getOriginalImage());
@@ -238,17 +227,17 @@ class Document
     }
 
     /**
-     * Returns a list of Document\Zone objects
+     * Returns a list of Zone objects
      * @return array
      */
-    public function getZones()
+    public function getZones(): array
     {
         if ($this->zones === null) {
             $data = $this->getModelData();
             $this->zones = array();
             if ($data) {
                 foreach ($data['zones'] as $zoneData) {
-                    $this->zones[] = new Document\Zone($this, $zoneData);
+                    $this->zones[] = new Zone($this, $zoneData);
                 }
             }
         }
@@ -262,7 +251,7 @@ class Document
      *              1 => height,
      *              )
      */
-    public function getActualSizeMm()
+    public function getActualSizeMm(): array
     {
         $data = $this->getModelData();
         return array(floatval($data['width_mm']), floatval($data['height_mm']));
@@ -272,7 +261,7 @@ class Document
      * Returns the raw model data via the Service
      * @return array|null
      */
-    public function getModelData()
+    public function getModelData(): ?array
     {
         if (!$this->modelData) {
             $this->modelData = $this->service->getModelData($this->getIdUuid());
@@ -319,7 +308,7 @@ class Document
      * Returns the zone that hold the MRZ
      * @return Zone|null
      */
-    public function getMrzZone()
+    public function getMrzZone(): ?Zone
     {
         foreach ($this->getZones() as $zone) {
             if ($zone->isMrz()) {
@@ -330,15 +319,15 @@ class Document
     }
 
     /**
-     * Returns the Document\Mrz object of the getMrzZone
-     * @return null|Document\Mrz
+     * Returns the Mrz object of the getMrzZone
+     * @return null|Mrz
      */
-    public function getMrz()
+    public function getMrz(): ?Mrz
     {
         if ($this->mrz == null) {
             $zone = $this->getMrzZone();
             if ($zone !== null) {
-                $this->mrz = new Document\Mrz($zone);
+                $this->mrz = new Mrz($zone, $this->service);
                 return $this->mrz;
             }
         }
@@ -352,7 +341,7 @@ class Document
      * @param array $pixelCoordinates array of xmin,ymin,xmax,ymax
      * @return array of x, y, width, height
      */
-    protected function coordinatesArray(array $pixelCoordinates)
+    private function coordinatesArray(array $pixelCoordinates): array
     {
         $response = array(
             'x' => $pixelCoordinates['xmin'],

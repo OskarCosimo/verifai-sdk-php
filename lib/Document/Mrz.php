@@ -2,6 +2,9 @@
 
 namespace Verifai\Document;
 
+use Verifai\Service;
+use Verifai\Document;
+
 /**
  * Modern documents have a Machine Readable Zone. This class is the
  * proxy between your code and the Verifai OCR service. You can get
@@ -15,27 +18,33 @@ class Mrz
     /**
      * @var Zone|null
      */
-    public $zone;
+    private $zone;
 
     /**
      * @var array|null
      */
-    protected $mrzResponse;
+    private $mrzResponse;
 
     /**
-     * Class constructor.
-     * @param Zone $zone
+     * @var Service|null
      */
-    public function __construct(Zone $zone)
+    private $service;
+
+    /**
+     * @param Zone $zone
+     * @param Service|null $service
+     */
+    public function __construct(Zone $zone, Service $service)
     {
         $this->zone = $zone;
+        $this->service = $service;
     }
 
     /**
      * Returns weather the OCR has been successful
      * @return bool
      */
-    public function isSuccessful()
+    public function isSuccessful(): bool
     {
         return $this->readMrz()['status'] == 'SUCCESS';
     }
@@ -44,14 +53,14 @@ class Mrz
      * Returns the raw OCR response from the OCR service
      * @return array|null
      */
-    public function readMrz()
+    public function readMrz(): ?array
     {
         if ($this->mrzResponse !== null) {
             $ocrResult = $this->mrzResponse;
         } else {
             $mrz = $this->zone;
             $mrzImage = $this->getDocument()->getPartOfCardImage($mrz->getPositionInImage(), .03);
-            $ocrResult = $this->getService()->getOcrData($mrzImage);
+            $ocrResult = $this->service->getOcrData($mrzImage);
             $this->mrzResponse = $ocrResult;
         }
         if ($ocrResult['status'] == 'NOT_FOUND') {
@@ -65,7 +74,7 @@ class Mrz
      * Returns the fields form the MRZ
      * @return array|null
      */
-    public function getFields()
+    public function getFields(): ?array
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['result']['fields'];
@@ -77,7 +86,7 @@ class Mrz
      * Returns the raw fields form the MRZ
      * @return array|null
      */
-    public function getFieldsRaw()
+    public function getFieldsRaw(): ?array
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['result']['fields_raw'];
@@ -89,7 +98,7 @@ class Mrz
      * Returns the checksum results for the MRZ
      * @return array|null
      */
-    public function getChecksums()
+    public function getChecksums(): ?array
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['result']['checksums'];
@@ -101,7 +110,7 @@ class Mrz
      * Returns the rotation that was required to read the MRZ
      * @return int|null
      */
-    public function getRotation()
+    public function getRotation(): ?int
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['rotation'];
@@ -110,20 +119,11 @@ class Mrz
     }
 
     /**
-     * @return \Verifai\Document
+     * @return Document
      */
-    protected function getDocument()
+    private function getDocument(): Document
     {
         return $this->zone->getDocument();
     }
-
-    /**
-     * @return \Verifai\Service
-     */
-    protected function getService()
-    {
-        return $this->getDocument()->getService();
-    }
-
 
 }

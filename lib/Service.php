@@ -2,9 +2,6 @@
 
 namespace Verifai;
 
-require_once 'Document.php';
-require_once 'DocumentFactory.php';
-
 /**
  * The VerifaiService is your main component to use. It communicates
  * with various backend systems and handles all the privacy sensitive
@@ -25,7 +22,7 @@ class Service
 
     /**
      * API Token to communicate with Verifai Backend
-     * @var string
+     * @var string|null
      */
     public $apiToken;
     /**
@@ -42,17 +39,20 @@ class Service
     /**
      * @var array
      */
-    protected $serverUrls = array('classifier' => array(), 'ocr' => array());
+    private $serverUrls = array('classifier' => array(), 'ocr' => array());
     /**
      * @var array
      */
-    protected $urlRoundRobbin = array('classifier' => 0, 'ocr' => 0);
+    private $urlRoundRobin = array('classifier' => 0, 'ocr' => 0);
 
     /**
      * @var DocumentFactory
      */
     private $documentFactory;
 
+    /**
+     * @param DocumentFactory $documentFactory
+     */
     public function __construct(DocumentFactory $documentFactory)
     {
         $this->documentFactory = $documentFactory;
@@ -61,7 +61,7 @@ class Service
     /**
      * @return string|null
      */
-    protected function getApiToken()
+    public function getApiToken(): ?string
     {
         return $this->apiToken;
     }
@@ -69,7 +69,7 @@ class Service
     /**
      * @return string
      */
-    protected function getBaseApiUrl()
+    public function getBaseApiUrl(): string
     {
         return $this->baseApiUrl;
     }
@@ -89,9 +89,9 @@ class Service
      * @param bool $skipUnreachable
      * @return bool
      */
-    public function addClassifierUrl(string $url, bool $skipUnreachable = false)
+    public function addClassifierUrl(string $url, bool $skipUnreachable = false): bool
     {
-        return $this->addServerUrl($url, $skipUnreachable, 'classifier');
+        return $this->addServerUrl($url, 'classifier', $skipUnreachable);
     }
 
     /**
@@ -109,9 +109,9 @@ class Service
      * @param bool $skipUnreachable
      * @return bool
      */
-    public function addOcrUrl(string $url, bool $skipUnreachable = false)
+    public function addOcrUrl(string $url, bool $skipUnreachable = false): bool
     {
-        return $this->addServerUrl($url, $skipUnreachable, 'ocr');
+        return $this->addServerUrl($url, 'ocr', $skipUnreachable);
     }
 
     /**
@@ -121,7 +121,7 @@ class Service
      * @param string $id_uuid
      * @return array|null
      */
-    public function getModelData(string $id_uuid)
+    public function getModelData(string $id_uuid): ?array
     {
         $data = $this->getFromApi('id-models', array(
             'uuid' => $id_uuid
@@ -136,9 +136,9 @@ class Service
      * Sends the mrz_image (Image) to the Verifai OCR service, and
      * returns the raw response.
      * @param resource $mrzImage
-     * @return array
+     * @return null|array
      */
-    public function getOcrData($mrzImage)
+    public function getOcrData($mrzImage): ?array
     {
         $response = $this->sendImage($this->getUrl('ocr'), $mrzImage);
         return $response;
@@ -150,11 +150,11 @@ class Service
      * @param resource $image
      * @return null|Document
      */
-    public function classifyImage($image)
+    public function classifyImage($image): ?Document
     {
         $json_response = $this->sendImage($this->getUrl('classifier'), $image);
 
-        if ($json_response['status'] == 'SUCCESS') {
+        if ($json_response && $json_response['status'] == 'SUCCESS') {
             $handle = fopen('php://memory', 'w+');
             imagejpeg($image, $handle);
             fseek($handle, 0);
@@ -175,7 +175,7 @@ class Service
      * @param string $imagePath
      * @return null|Document
      */
-    public function classifyImagePath(string $imagePath)
+    public function classifyImagePath(string $imagePath): ?Document
     {
         $gdImage = imagecreatefromjpeg($imagePath);
         return $this->classifyImage($gdImage);
@@ -187,7 +187,7 @@ class Service
      * @param string $type
      * @return bool
      */
-    protected function addServerUrl(string $url, $skipUnreachable = false, string $type)
+    private function addServerUrl(string $url, string $type, $skipUnreachable = false): bool
     {
         if ($skipUnreachable or $this->checkServerUrl($url)) {
             $this->serverUrls[$type][] = $url;
@@ -199,17 +199,23 @@ class Service
      * @param string $type
      * @return string|null
      */
-    protected function getUrl(string $type)
+    private function getUrl(string $type): ?string
     {
-        return $this->serverUrls[$type][0];
+        $array_count = count($this->serverUrls[$type]);
+        if($array_count == 0) {
+            return null;
+        }else if($this->urlRoundRobin[$type] == $array_count) {
+            $this->urlRoundRobin[$type] = 0;
+        }
+        return $this->serverUrls[$type][$this->urlRoundRobin[$type]++];
     }
 
     /**
      * @param string $path
      * @param array $params
-     * @return mixed
+     * @return null|array
      */
-    protected function getFromApi(string $path, array $params)
+    private function getFromApi(string $path, array $params): ?array
     {
         $GET = http_build_query($params);
 
@@ -233,7 +239,7 @@ class Service
      * @param string $url
      * @return bool
      */
-    protected function checkServerUrl(string $url)
+    private function checkServerUrl(string $url): bool
     {
         $ch = curl_init();
 
@@ -251,7 +257,9 @@ class Service
 
         // Find the options
         preg_match("/Allow: ([A-Z, ]*)/", $response, $matches);
-        $options = explode(',', str_replace(" ", "", $matches[1]));
+        // check whether we have received valid response
+        if (count($matches) < 2) return false;
+        $options = explode(',', str_replace(' ', '', $matches[1]));
         sort($options);
         curl_close($ch);
 
@@ -262,9 +270,9 @@ class Service
     /**
      * @param string $url
      * @param resource $image
-     * @return mixed
+     * @return null|array
      */
-    protected function sendImage(string $url, $image)
+    private function sendImage(string $url, $image): ?array
     {
         $tmp = tempnam('', 'verifai_image');
         imagejpeg($image, $tmp);
@@ -292,7 +300,7 @@ class Service
      * this wrapper keeps users from having to deal with those options
      * @return int
      */
-    private function curlSslVerify()
+    private function curlSslVerify(): int
     {
         if ($this->sslVerify) {
             return 2;
