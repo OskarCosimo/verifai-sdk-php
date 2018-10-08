@@ -33,7 +33,7 @@ class Mrz
      * @param Zone $zone
      * @param Service|null $service
      */
-    public function __construct(Zone $zone, Service $service = null)
+    public function __construct(Zone $zone, Service $service)
     {
         $this->zone = $zone;
         $this->service = $service;
