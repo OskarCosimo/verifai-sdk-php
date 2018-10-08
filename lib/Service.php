@@ -204,7 +204,7 @@ class Service
      */
     private function getUrl(string $type): ?string
     {
-        if($this->urlRoundRobin[$type] == sizeof($this->serverUrls[$type])) {
+        if($this->urlRoundRobin[$type] == count($this->serverUrls[$type])) {
             $this->urlRoundRobin[$type] = 0;
         }
         return $this->serverUrls[$type][$this->urlRoundRobin[$type]++];
@@ -258,7 +258,7 @@ class Service
         // Find the options
         preg_match("/Allow: ([A-Z, ]*)/", $response, $matches);
         // check whether we have received valid response
-        if (sizeof($matches) < 2) return false;
+        if (count($matches) < 2) return false;
         $options = explode(',', str_replace(' ', '', $matches[1]));
         sort($options);
         curl_close($ch);
