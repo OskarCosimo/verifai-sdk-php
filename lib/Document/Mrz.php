@@ -53,7 +53,7 @@ class Mrz
      * Returns the raw OCR response from the OCR service
      * @return array|null
      */
-    public function readMrz(): ?array
+    public function readMrz()
     {
         if ($this->mrzResponse !== null) {
             $ocrResult = $this->mrzResponse;
@@ -74,7 +74,7 @@ class Mrz
      * Returns the fields form the MRZ
      * @return array|null
      */
-    public function getFields(): ?array
+    public function getFields()
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['result']['fields'];
@@ -86,7 +86,7 @@ class Mrz
      * Returns the raw fields form the MRZ
      * @return array|null
      */
-    public function getFieldsRaw(): ?array
+    public function getFieldsRaw()
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['result']['fields_raw'];
@@ -98,7 +98,7 @@ class Mrz
      * Returns the checksum results for the MRZ
      * @return array|null
      */
-    public function getChecksums(): ?array
+    public function getChecksums()
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['result']['checksums'];
@@ -110,7 +110,7 @@ class Mrz
      * Returns the rotation that was required to read the MRZ
      * @return int|null
      */
-    public function getRotation(): ?int
+    public function getRotation()
     {
         if ($this->isSuccessful()) {
             return $this->readMrz()['rotation'];

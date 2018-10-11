@@ -143,7 +143,7 @@ class Document
      * Return the coordinates where te document is located
      * @return array|null
      */
-    public function getPositionInImage(): ?array
+    public function getPositionInImage()
     {
         return $this->coordinates;
     }
@@ -261,7 +261,7 @@ class Document
      * Returns the raw model data via the Service
      * @return array|null
      */
-    public function getModelData(): ?array
+    public function getModelData()
     {
         if (!$this->modelData) {
             $this->modelData = $this->service->getModelData($this->getIdUuid());
@@ -308,7 +308,7 @@ class Document
      * Returns the zone that hold the MRZ
      * @return Zone|null
      */
-    public function getMrzZone(): ?Zone
+    public function getMrzZone()
     {
         foreach ($this->getZones() as $zone) {
             if ($zone->isMrz()) {
@@ -322,7 +322,7 @@ class Document
      * Returns the Mrz object of the getMrzZone
      * @return null|Mrz
      */
-    public function getMrz(): ?Mrz
+    public function getMrz()
     {
         if ($this->mrz == null) {
             $zone = $this->getMrzZone();

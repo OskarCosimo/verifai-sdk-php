@@ -61,7 +61,7 @@ class Service
     /**
      * @return string|null
      */
-    public function getApiToken(): ?string
+    public function getApiToken()
     {
         return $this->apiToken;
     }
@@ -121,7 +121,7 @@ class Service
      * @param string $id_uuid
      * @return array|null
      */
-    public function getModelData(string $id_uuid): ?array
+    public function getModelData(string $id_uuid)
     {
         $data = $this->getFromApi('id-models', array(
             'uuid' => $id_uuid
@@ -138,7 +138,7 @@ class Service
      * @param resource $mrzImage
      * @return null|array
      */
-    public function getOcrData($mrzImage): ?array
+    public function getOcrData($mrzImage)
     {
         $response = $this->sendImage($this->getUrl('ocr'), $mrzImage);
         return $response;
@@ -150,7 +150,7 @@ class Service
      * @param resource $image
      * @return null|Document
      */
-    public function classifyImage($image): ?Document
+    public function classifyImage($image)
     {
         $json_response = $this->sendImage($this->getUrl('classifier'), $image);
 
@@ -175,7 +175,7 @@ class Service
      * @param string $imagePath
      * @return null|Document
      */
-    public function classifyImagePath(string $imagePath): ?Document
+    public function classifyImagePath(string $imagePath)
     {
         $gdImage = imagecreatefromjpeg($imagePath);
         return $this->classifyImage($gdImage);
@@ -199,7 +199,7 @@ class Service
      * @param string $type
      * @return string|null
      */
-    private function getUrl(string $type): ?string
+    private function getUrl(string $type)
     {
         $array_count = count($this->serverUrls[$type]);
         if($array_count == 0) {
@@ -215,7 +215,7 @@ class Service
      * @param array $params
      * @return null|array
      */
-    private function getFromApi(string $path, array $params): ?array
+    private function getFromApi(string $path, array $params)
     {
         $GET = http_build_query($params);
 
@@ -272,7 +272,7 @@ class Service
      * @param resource $image
      * @return null|array
      */
-    private function sendImage(string $url, $image): ?array
+    private function sendImage(string $url, $image)
     {
         $tmp = tempnam('', 'verifai_image');
         imagejpeg($image, $tmp);

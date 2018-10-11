@@ -123,7 +123,7 @@ class Zone
      * Returns the document
      * @return null|Document
      */
-    public function getDocument(): ?Document
+    public function getDocument()
     {
         return $this->document;
     }
